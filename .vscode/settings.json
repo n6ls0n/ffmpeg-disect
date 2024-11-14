@@ -1,3 +1,15 @@
 {
-    "iis.configDir": ""
+    "iis.configDir": "",
+    "files.associations": {
+        "channel_layout.h": "c",
+        "version.h": "c",
+        "macros.h": "c",
+        "ffplay_renderer.h": "c",
+        "frame.h": "c",
+        "avutil.h": "c",
+        "pixfmt.h": "c",
+        "avassert.h": "c",
+        "log.h": "c",
+        "attributes.h": "c"
+    }
 }
