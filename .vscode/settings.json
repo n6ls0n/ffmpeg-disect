@@ -10,6 +10,8 @@
         "pixfmt.h": "c",
         "avassert.h": "c",
         "log.h": "c",
-        "attributes.h": "c"
+        "attributes.h": "c",
+        "common.h": "c",
+        "error.h": "c"
     }
 }
