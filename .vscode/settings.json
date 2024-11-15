@@ -9,5 +9,6 @@
         }
     }
 },
-"terminal.integrated.defaultProfile.windows": "MSYS2 MINGW64"
+"terminal.integrated.defaultProfile.windows": "MSYS2 MINGW64",
+"iis.configDir": ""
 }
