@@ -4,6 +4,11 @@ project(ffplay CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Set GUI_TYPE for Windows
+if(WIN32)
+    set(GUI_TYPE WIN32)
+endif()
+
 # Set MSYS2 MinGW-w64 environment
 set(CMAKE_CXX_COMPILER "g++")
 
@@ -15,6 +20,9 @@ set(INCLUDES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include")
 set(FFMPEG_INCLUDE_DIR "C:/msys64/mingw64/include")
 set(FFMPEG_LIB_DIR "C:/msys64/mingw64/lib")
 set(FFMPEG_BIN_DIR "C:/msys64/mingw64/bin")
+
+# Set MinGW-w64 bin directory
+set(MINGW_BIN_DIR "C:/msys64/mingw64/bin")
 
 # Find required packages
 find_package(SDL2 REQUIRED)
@@ -44,7 +52,7 @@ set(IMGUI_SOURCES
 )
 
 # Define the executable with C++ sources
-add_executable(${PROJECT_NAME}
+add_executable(${PROJECT_NAME} ${GUI_TYPE}
     ffplay.cpp
     ${IMGUI_SOURCES}
 )
@@ -70,7 +78,7 @@ add_custom_target(copy_resources ALL)
 add_dependencies(${PROJECT_NAME} copy_resources)
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E echo "Copying FFMPEG DLLs..."
+    COMMAND ${CMAKE_COMMAND} -E echo "Copying FFMPEG and MinGW DLLs..."
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
         ${FFMPEG_BIN_DIR}/avcodec-61.dll
         ${FFMPEG_BIN_DIR}/avformat-61.dll
@@ -80,6 +88,13 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
         ${FFMPEG_BIN_DIR}/swresample-5.dll
         ${FFMPEG_BIN_DIR}/swscale-8.dll
         ${FFMPEG_BIN_DIR}/postproc-58.dll
+        ${MINGW_BIN_DIR}/libgcc_s_seh-1.dll
+        ${MINGW_BIN_DIR}/libstdc++-6.dll
+        ${MINGW_BIN_DIR}/libwinpthread-1.dll
         $<TARGET_FILE_DIR:${PROJECT_NAME}>
-    COMMAND ${CMAKE_COMMAND} -E echo "FFMPEG DLLs copied successfully"
+    COMMAND ${CMAKE_COMMAND} -E echo "FFMPEG and MinGW DLLs copied successfully"
 )
+
+if(WIN32)
+    target_link_options(${PROJECT_NAME} PRIVATE -mwindows)
+endif()
