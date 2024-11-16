@@ -1,0 +1,11 @@
+Basic configuration command
+
+./configure
+
+Basic make command
+
+mingw32-make -j4
+
+Remove configurations and any built binaries
+
+mingw32-make distclean
