@@ -4,7 +4,8 @@
             "name": "MSYS2 MinGW64",
             "includePath": [
                 "${workspaceFolder}/**",
-                "C:/msys64/mingw64/include"
+                "C:/msys64/mingw64/include",
+                "C:/msys64/mingw64/include/SDL2"
             ],
             "defines": [
                 "_DEBUG",
