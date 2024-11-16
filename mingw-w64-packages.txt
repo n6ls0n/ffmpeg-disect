@@ -1,10 +1,15 @@
 mingw-w64-x86_64-SDL2
+mingw-w64-x86_64-aom
 mingw-w64-x86_64-gcc
 mingw-w64-x86_64-gdb
 mingw-w64-x86_64-gdb-multiarch
+mingw-w64-x86_64-libass
 mingw-w64-x86_64-libmangle-git
+mingw-w64-x86_64-libvpx
 mingw-w64-x86_64-make
 mingw-w64-x86_64-nasm
+mingw-w64-x86_64-opus
 mingw-w64-x86_64-pkgconf
 mingw-w64-x86_64-tools-git
 mingw-w64-x86_64-winstorecompat-git
+mingw-w64-x86_64-x264
