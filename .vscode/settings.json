@@ -10,5 +10,10 @@
     }
 },
 "terminal.integrated.defaultProfile.windows": "MSYS2 MINGW64",
-"iis.configDir": ""
+"iis.configDir": "",
+"files.associations": {
+    "cmdutils.h": "c",
+    "opt_common.h": "c",
+    "config.h": "c"
+}
 }
