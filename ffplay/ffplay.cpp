@@ -3229,8 +3229,9 @@ end:
 }
 
 
-
-
+//              ##########################################
+//                         SDL Functions
+//              ##########################################
 
 static inline void fill_rectangle(int x, int y, int w, int h)
 {
@@ -3412,6 +3413,10 @@ static void set_default_window_size(int width, int height, AVRational sar)
 }
 
 
+//              ##########################################
+//                         Misc Functions
+//              ##########################################
+
 static int get_master_sync_type(VideoState *is) {
     if (is->av_sync_type == AV_SYNC_VIDEO_MASTER) {
         if (is->video_st)
@@ -3428,14 +3433,12 @@ static int get_master_sync_type(VideoState *is) {
     }
 }
 
-
 static void update_volume(VideoState *is, int sign, double step)
 {
     double volume_level = is->audio_volume ? (20 * log(is->audio_volume / (double)SDL_MIX_MAXVOLUME) / log(10)) : -1000.0;
     int new_volume = lrint(SDL_MIX_MAXVOLUME * pow(10.0, (volume_level + sign * step) / 20.0));
     is->audio_volume = av_clip(is->audio_volume == new_volume ? (is->audio_volume + sign) : new_volume, 0, SDL_MIX_MAXVOLUME);
 }
-
 
 static double compute_target_delay(double delay, VideoState *is)
 {
@@ -3479,8 +3482,6 @@ static double vp_duration(VideoState *is, Frame *vp, Frame *nextvp) {
     }
 }
 
-
-
 /* copy samples for viewing in editor window */
 static void update_sample_display(VideoState *is, short *samples, int samples_size)
 {
@@ -3499,8 +3500,6 @@ static void update_sample_display(VideoState *is, short *samples, int samples_si
         size -= len;
     }
 }
-
-
 
 static int create_hwaccel(AVBufferRef **device_ctx)
 {
@@ -3538,13 +3537,11 @@ static int create_hwaccel(AVBufferRef **device_ctx)
     return ret;
 }
 
-
 static int decode_interrupt_cb(void *ctx)
 {
     VideoState *is = ctx;
     return is->abort_request;
 }
-
 
 static int is_realtime(AVFormatContext *s)
 {
@@ -3561,7 +3558,6 @@ static int is_realtime(AVFormatContext *s)
         return 1;
     return 0;
 }
-
 
 static void refresh_loop_wait_event(VideoState *is, SDL_Event *event) {
     double remaining_time = 0.0;
@@ -3804,8 +3800,6 @@ static void event_loop(VideoState *cur_stream)
         }
     }
 }
-
-
 
 static void show_usage(void)
 {
