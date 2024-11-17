@@ -1,5 +1,5 @@
 // =============================================================================
-//   Include Statements
+//                              Include Statements
 // =============================================================================
 
 #include <math.h>
@@ -65,7 +65,7 @@ extern "C" {
 #endif
 
 // =============================================================================
-//   Environment Variables
+//                              Environment Variables
 // =============================================================================
 
 const char program_name[] = "ffplay";
@@ -121,7 +121,7 @@ const int program_birth_year = 2003;
 #define FRAME_QUEUE_SIZE FFMAX(SAMPLE_QUEUE_SIZE, FFMAX(VIDEO_PICTURE_QUEUE_SIZE, SUBPICTURE_QUEUE_SIZE))
 
 // =============================================================================
-//   Struct Definitions
+//                            Struct Definitions
 // =============================================================================
 
 typedef struct MyAVPacketList {
@@ -316,7 +316,7 @@ typedef struct VideoState {
 } VideoState;
 
 // =============================================================================
-//   User Options
+//                              User Options
 // =============================================================================
 
 /* options specified by the user */
@@ -409,13 +409,13 @@ static const struct TextureFormatEntry {
 };
 
 // =============================================================================
-//   Function Definitions
+//                           Function Definitions
 // =============================================================================
 
 
 //              ##########################################
 //                          Packet Queue Functions
-//               ##########################################
+//              ##########################################
 
 static int packet_queue_put_private(PacketQueue *q, AVPacket *pkt)
 {
@@ -567,8 +567,8 @@ static int packet_queue_get(PacketQueue *q, AVPacket *pkt, int block, int *seria
 
 
 //              ##########################################
-//                          Functions
-//               ##########################################
+//                         OPT Functions
+//              ##########################################
 
 static int opt_add_vfilter(void *optctx, const char *opt, const char *arg)
 {
@@ -583,6 +583,115 @@ static int opt_add_vfilter(void *optctx, const char *opt, const char *arg)
     return 0;
 }
 
+static int opt_width(void *optctx, const char *opt, const char *arg)
+{
+    double num;
+    int ret = parse_number(opt, arg, OPT_TYPE_INT64, 1, INT_MAX, &num);
+    if (ret < 0)
+        return ret;
+
+    screen_width = num;
+    return 0;
+}
+
+static int opt_height(void *optctx, const char *opt, const char *arg)
+{
+    double num;
+    int ret = parse_number(opt, arg, OPT_TYPE_INT64, 1, INT_MAX, &num);
+    if (ret < 0)
+        return ret;
+
+    screen_height = num;
+    return 0;
+}
+
+static int opt_format(void *optctx, const char *opt, const char *arg)
+{
+    file_iformat = av_find_input_format(arg);
+    if (!file_iformat) {
+        av_log(NULL, AV_LOG_FATAL, "Unknown input format: %s\n", arg);
+        return AVERROR(EINVAL);
+    }
+    return 0;
+}
+
+static int opt_sync(void *optctx, const char *opt, const char *arg)
+{
+    if (!strcmp(arg, "audio"))
+        av_sync_type = AV_SYNC_AUDIO_MASTER;
+    else if (!strcmp(arg, "video"))
+        av_sync_type = AV_SYNC_VIDEO_MASTER;
+    else if (!strcmp(arg, "ext"))
+        av_sync_type = AV_SYNC_EXTERNAL_CLOCK;
+    else {
+        av_log(NULL, AV_LOG_ERROR, "Unknown value for %s: %s\n", opt, arg);
+        exit(1);
+    }
+    return 0;
+}
+
+static int opt_show_mode(void *optctx, const char *opt, const char *arg)
+{
+    show_mode = !strcmp(arg, "video") ? SHOW_MODE_VIDEO :
+                !strcmp(arg, "waves") ? SHOW_MODE_WAVES :
+                !strcmp(arg, "rdft" ) ? SHOW_MODE_RDFT  : SHOW_MODE_NONE;
+
+    if (show_mode == SHOW_MODE_NONE) {
+        double num;
+        int ret = parse_number(opt, arg, OPT_TYPE_INT, 0, SHOW_MODE_NB-1, &num);
+        if (ret < 0)
+            return ret;
+        show_mode = num;
+    }
+    return 0;
+}
+
+static int opt_input_file(void *optctx, const char *filename)
+{
+    if (input_filename) {
+        av_log(NULL, AV_LOG_FATAL,
+               "Argument '%s' provided as input filename, but '%s' was already specified.\n",
+                filename, input_filename);
+        return AVERROR(EINVAL);
+    }
+    if (!strcmp(filename, "-"))
+        filename = "fd:";
+    input_filename = av_strdup(filename);
+    if (!input_filename)
+        return AVERROR(ENOMEM);
+
+    return 0;
+}
+
+static int opt_codec(void *optctx, const char *opt, const char *arg)
+{
+   const char *spec = strchr(opt, ':');
+   const char **name;
+   if (!spec) {
+       av_log(NULL, AV_LOG_ERROR,
+              "No media specifier was specified in '%s' in option '%s'\n",
+               arg, opt);
+       return AVERROR(EINVAL);
+   }
+   spec++;
+
+   switch (spec[0]) {
+   case 'a' : name = &audio_codec_name;    break;
+   case 's' : name = &subtitle_codec_name; break;
+   case 'v' : name = &video_codec_name;    break;
+   default:
+       av_log(NULL, AV_LOG_ERROR,
+              "Invalid media specifier '%s' in option '%s'\n", spec, opt);
+       return AVERROR(EINVAL);
+   }
+
+   av_freep(name);
+   *name = av_strdup(arg);
+   return *name ? 0 : AVERROR(ENOMEM);
+}
+
+
+
 static inline
 int cmp_audio_fmts(enum AVSampleFormat fmt1, int64_t channel_count1,
                    enum AVSampleFormat fmt2, int64_t channel_count2)
@@ -593,7 +702,6 @@ int cmp_audio_fmts(enum AVSampleFormat fmt1, int64_t channel_count1,
     else
         return channel_count1 != channel_count2 || fmt1 != fmt2;
 }
-
 
 static int decoder_init(Decoder *d, AVCodecContext *avctx, PacketQueue *queue, SDL_cond *empty_queue_cond) {
     memset(d, 0, sizeof(Decoder));
@@ -3583,113 +3691,6 @@ static void event_loop(VideoState *cur_stream)
             break;
         }
     }
-}
-
-static int opt_width(void *optctx, const char *opt, const char *arg)
-{
-    double num;
-    int ret = parse_number(opt, arg, OPT_TYPE_INT64, 1, INT_MAX, &num);
-    if (ret < 0)
-        return ret;
-
-    screen_width = num;
-    return 0;
-}
-
-static int opt_height(void *optctx, const char *opt, const char *arg)
-{
-    double num;
-    int ret = parse_number(opt, arg, OPT_TYPE_INT64, 1, INT_MAX, &num);
-    if (ret < 0)
-        return ret;
-
-    screen_height = num;
-    return 0;
-}
-
-static int opt_format(void *optctx, const char *opt, const char *arg)
-{
-    file_iformat = av_find_input_format(arg);
-    if (!file_iformat) {
-        av_log(NULL, AV_LOG_FATAL, "Unknown input format: %s\n", arg);
-        return AVERROR(EINVAL);
-    }
-    return 0;
-}
-
-static int opt_sync(void *optctx, const char *opt, const char *arg)
-{
-    if (!strcmp(arg, "audio"))
-        av_sync_type = AV_SYNC_AUDIO_MASTER;
-    else if (!strcmp(arg, "video"))
-        av_sync_type = AV_SYNC_VIDEO_MASTER;
-    else if (!strcmp(arg, "ext"))
-        av_sync_type = AV_SYNC_EXTERNAL_CLOCK;
-    else {
-        av_log(NULL, AV_LOG_ERROR, "Unknown value for %s: %s\n", opt, arg);
-        exit(1);
-    }
-    return 0;
-}
-
-static int opt_show_mode(void *optctx, const char *opt, const char *arg)
-{
-    show_mode = !strcmp(arg, "video") ? SHOW_MODE_VIDEO :
-                !strcmp(arg, "waves") ? SHOW_MODE_WAVES :
-                !strcmp(arg, "rdft" ) ? SHOW_MODE_RDFT  : SHOW_MODE_NONE;
-
-    if (show_mode == SHOW_MODE_NONE) {
-        double num;
-        int ret = parse_number(opt, arg, OPT_TYPE_INT, 0, SHOW_MODE_NB-1, &num);
-        if (ret < 0)
-            return ret;
-        show_mode = num;
-    }
-    return 0;
-}
-
-static int opt_input_file(void *optctx, const char *filename)
-{
-    if (input_filename) {
-        av_log(NULL, AV_LOG_FATAL,
-               "Argument '%s' provided as input filename, but '%s' was already specified.\n",
-                filename, input_filename);
-        return AVERROR(EINVAL);
-    }
-    if (!strcmp(filename, "-"))
-        filename = "fd:";
-    input_filename = av_strdup(filename);
-    if (!input_filename)
-        return AVERROR(ENOMEM);
-
-    return 0;
-}
-
-static int opt_codec(void *optctx, const char *opt, const char *arg)
-{
-   const char *spec = strchr(opt, ':');
-   const char **name;
-   if (!spec) {
-       av_log(NULL, AV_LOG_ERROR,
-              "No media specifier was specified in '%s' in option '%s'\n",
-               arg, opt);
-       return AVERROR(EINVAL);
-   }
-   spec++;
-
-   switch (spec[0]) {
-   case 'a' : name = &audio_codec_name;    break;
-   case 's' : name = &subtitle_codec_name; break;
-   case 'v' : name = &video_codec_name;    break;
-   default:
-       av_log(NULL, AV_LOG_ERROR,
-              "Invalid media specifier '%s' in option '%s'\n", spec, opt);
-       return AVERROR(EINVAL);
-   }
-
-   av_freep(name);
-   *name = av_strdup(arg);
-   return *name ? 0 : AVERROR(ENOMEM);
 }
 
 static int dummy;
