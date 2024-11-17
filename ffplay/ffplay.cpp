@@ -413,29 +413,9 @@ static const struct TextureFormatEntry {
 // =============================================================================
 
 
-static int opt_add_vfilter(void *optctx, const char *opt, const char *arg)
-{
-    int ret = GROW_ARRAY(vfilters_list, nb_vfilters);
-    if (ret < 0)
-        return ret;
-
-    vfilters_list[nb_vfilters - 1] = av_strdup(arg);
-    if (!vfilters_list[nb_vfilters - 1])
-        return AVERROR(ENOMEM);
-
-    return 0;
-}
-
-static inline
-int cmp_audio_fmts(enum AVSampleFormat fmt1, int64_t channel_count1,
-                   enum AVSampleFormat fmt2, int64_t channel_count2)
-{
-    /* If channel count == 1, planar and non-planar formats are the same */
-    if (channel_count1 == 1 && channel_count2 == 1)
-        return av_get_packed_sample_fmt(fmt1) != av_get_packed_sample_fmt(fmt2);
-    else
-        return channel_count1 != channel_count2 || fmt1 != fmt2;
-}
+//              ##########################################
+//                          Packet Queue Functions
+//               ##########################################
 
 static int packet_queue_put_private(PacketQueue *q, AVPacket *pkt)
 {
@@ -584,6 +564,36 @@ static int packet_queue_get(PacketQueue *q, AVPacket *pkt, int block, int *seria
     SDL_UnlockMutex(q->mutex);
     return ret;
 }
+
+
+//              ##########################################
+//                          Functions
+//               ##########################################
+
+static int opt_add_vfilter(void *optctx, const char *opt, const char *arg)
+{
+    int ret = GROW_ARRAY(vfilters_list, nb_vfilters);
+    if (ret < 0)
+        return ret;
+
+    vfilters_list[nb_vfilters - 1] = av_strdup(arg);
+    if (!vfilters_list[nb_vfilters - 1])
+        return AVERROR(ENOMEM);
+
+    return 0;
+}
+
+static inline
+int cmp_audio_fmts(enum AVSampleFormat fmt1, int64_t channel_count1,
+                   enum AVSampleFormat fmt2, int64_t channel_count2)
+{
+    /* If channel count == 1, planar and non-planar formats are the same */
+    if (channel_count1 == 1 && channel_count2 == 1)
+        return av_get_packed_sample_fmt(fmt1) != av_get_packed_sample_fmt(fmt2);
+    else
+        return channel_count1 != channel_count2 || fmt1 != fmt2;
+}
+
 
 static int decoder_init(Decoder *d, AVCodecContext *avctx, PacketQueue *queue, SDL_cond *empty_queue_cond) {
     memset(d, 0, sizeof(Decoder));
