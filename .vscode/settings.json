@@ -14,6 +14,14 @@
 "files.associations": {
     "cmdutils.h": "c",
     "opt_common.h": "c",
-    "config.h": "c"
+    "config.h": "c",
+    "array": "cpp",
+    "charconv": "cpp",
+    "compare": "cpp",
+    "functional": "cpp",
+    "tuple": "cpp",
+    "type_traits": "cpp",
+    "utility": "cpp",
+    "variant": "cpp"
 }
 }
