@@ -567,7 +567,7 @@ static int packet_queue_get(PacketQueue *q, AVPacket *pkt, int block, int *seria
 
 
 //              ##########################################
-//                         OPT Functions
+//                         Opt Functions
 //              ##########################################
 
 static int opt_add_vfilter(void *optctx, const char *opt, const char *arg)
@@ -691,17 +691,9 @@ static int opt_codec(void *optctx, const char *opt, const char *arg)
 }
 
 
-
-static inline
-int cmp_audio_fmts(enum AVSampleFormat fmt1, int64_t channel_count1,
-                   enum AVSampleFormat fmt2, int64_t channel_count2)
-{
-    /* If channel count == 1, planar and non-planar formats are the same */
-    if (channel_count1 == 1 && channel_count2 == 1)
-        return av_get_packed_sample_fmt(fmt1) != av_get_packed_sample_fmt(fmt2);
-    else
-        return channel_count1 != channel_count2 || fmt1 != fmt2;
-}
+//              ##########################################
+//                         Decoder Functions
+//              ##########################################
 
 static int decoder_init(Decoder *d, AVCodecContext *avctx, PacketQueue *queue, SDL_cond *empty_queue_cond) {
     memset(d, 0, sizeof(Decoder));
@@ -818,6 +810,37 @@ static int decoder_decode_frame(Decoder *d, AVFrame *frame, AVSubtitle *sub) {
 static void decoder_destroy(Decoder *d) {
     av_packet_free(&d->pkt);
     avcodec_free_context(&d->avctx);
+}
+
+static void decoder_abort(Decoder *d, FrameQueue *fq)
+{
+    packet_queue_abort(d->queue);
+    frame_queue_signal(fq);
+    SDL_WaitThread(d->decoder_tid, NULL);
+    d->decoder_tid = NULL;
+    packet_queue_flush(d->queue);
+}
+
+static int decoder_start(Decoder *d, int (*fn)(void *), const char *thread_name, void* arg)
+{
+    packet_queue_start(d->queue);
+    d->decoder_tid = SDL_CreateThread(fn, thread_name, arg);
+    if (!d->decoder_tid) {
+        av_log(NULL, AV_LOG_ERROR, "SDL_CreateThread(): %s\n", SDL_GetError());
+        return AVERROR(ENOMEM);
+    }
+    return 0;
+}
+
+static inline
+int cmp_audio_fmts(enum AVSampleFormat fmt1, int64_t channel_count1,
+                   enum AVSampleFormat fmt2, int64_t channel_count2)
+{
+    /* If channel count == 1, planar and non-planar formats are the same */
+    if (channel_count1 == 1 && channel_count2 == 1)
+        return av_get_packed_sample_fmt(fmt1) != av_get_packed_sample_fmt(fmt2);
+    else
+        return channel_count1 != channel_count2 || fmt1 != fmt2;
 }
 
 static void frame_queue_unref_item(Frame *vp)
@@ -954,14 +977,7 @@ static int64_t frame_queue_last_pos(FrameQueue *f)
         return -1;
 }
 
-static void decoder_abort(Decoder *d, FrameQueue *fq)
-{
-    packet_queue_abort(d->queue);
-    frame_queue_signal(fq);
-    SDL_WaitThread(d->decoder_tid, NULL);
-    d->decoder_tid = NULL;
-    packet_queue_flush(d->queue);
-}
+
 
 static inline void fill_rectangle(int x, int y, int w, int h)
 {
@@ -2292,16 +2308,6 @@ static int audio_thread(void *arg)
     return ret;
 }
 
-static int decoder_start(Decoder *d, int (*fn)(void *), const char *thread_name, void* arg)
-{
-    packet_queue_start(d->queue);
-    d->decoder_tid = SDL_CreateThread(fn, thread_name, arg);
-    if (!d->decoder_tid) {
-        av_log(NULL, AV_LOG_ERROR, "SDL_CreateThread(): %s\n", SDL_GetError());
-        return AVERROR(ENOMEM);
-    }
-    return 0;
-}
 
 static int video_thread(void *arg)
 {
