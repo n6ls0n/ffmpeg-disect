@@ -21,6 +21,10 @@ set(FFMPEG_INCLUDE_DIR "C:/msys64/mingw64/include")
 set(FFMPEG_LIB_DIR "C:/msys64/mingw64/lib")
 set(FFMPEG_BIN_DIR "C:/msys64/mingw64/bin")
 
+# Set FFTOOLS directories
+set(FFTOOLS_INCLUDE_DIR "${INCLUDES_DIR}/fftools-incl")
+set(FFTOOLS_LIB_DIR "${LIB_DIR}/fftools-libs")
+
 # Set MinGW-w64 bin directory
 set(MINGW_BIN_DIR "C:/msys64/mingw64/bin")
 
@@ -40,21 +44,25 @@ set(FFMPEG_LIBRARIES
 )
 
 # Add ImGui source files
-set(IMGUI_DIR "${CMAKE_CURRENT_SOURCE_DIR}/libs")
+set(IMGUI_LIB_DIR "${CMAKE_CURRENT_SOURCE_DIR}/libs/imgui-libs")
 set(IMGUI_SOURCES
-    ${IMGUI_DIR}/imgui.cpp
-    ${IMGUI_DIR}/imgui_demo.cpp
-    ${IMGUI_DIR}/imgui_draw.cpp
-    ${IMGUI_DIR}/imgui_tables.cpp
-    ${IMGUI_DIR}/imgui_widgets.cpp
-    ${IMGUI_DIR}/imgui_impl_sdl2.cpp
-    ${IMGUI_DIR}/imgui_impl_sdlrenderer2.cpp
+    ${IMGUI_LIB_DIR}/imgui.cpp
+    ${IMGUI_LIB_DIR}/imgui_demo.cpp
+    ${IMGUI_LIB_DIR}/imgui_draw.cpp
+    ${IMGUI_LIB_DIR}/imgui_tables.cpp
+    ${IMGUI_LIB_DIR}/imgui_widgets.cpp
+    ${IMGUI_LIB_DIR}/imgui_impl_sdl2.cpp
+    ${IMGUI_LIB_DIR}/imgui_impl_sdlrenderer2.cpp
 )
+
+
+set(IMGUI_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include/imgui-incl")
 
 # Define the executable with C++ sources
 add_executable(${PROJECT_NAME} ${GUI_TYPE}
     ffplay.cpp
     ${IMGUI_SOURCES}
+    ${FFTOOLS_LIB_DIR}
 )
 
 # Set include directories
@@ -62,7 +70,8 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${INCLUDES_DIR}
     ${SDL2_INCLUDE_DIRS}
     ${FFMPEG_INCLUDE_DIR}
-    ${IMGUI_DIR}
+    ${IMGUI_INCLUDE_DIR}
+    ${FFTOOLS_INCLUDE_DIR}
 )
 
 # Link libraries
