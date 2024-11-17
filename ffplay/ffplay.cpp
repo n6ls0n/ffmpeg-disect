@@ -316,6 +316,112 @@ typedef struct VideoState {
 } VideoState;
 
 // =============================================================================
+//   User Options
+// =============================================================================
+
+/* options specified by the user */
+static const AVInputFormat *file_iformat;
+static const char *input_filename;
+static const char *window_title;
+static int default_width  = 640;
+static int default_height = 480;
+static int screen_width  = 0;
+static int screen_height = 0;
+static int screen_left = SDL_WINDOWPOS_CENTERED;
+static int screen_top = SDL_WINDOWPOS_CENTERED;
+static int audio_disable;
+static int video_disable;
+static int subtitle_disable;
+static const char* wanted_stream_spec[AVMEDIA_TYPE_NB] = {0};
+static int seek_by_bytes = -1;
+static float seek_interval = 10;
+static int display_disable;
+static int borderless;
+static int alwaysontop;
+static int startup_volume = 100;
+static int show_status = -1;
+static int av_sync_type = AV_SYNC_AUDIO_MASTER;
+static int64_t start_time = AV_NOPTS_VALUE;
+static int64_t duration = AV_NOPTS_VALUE;
+static int fast = 0;
+static int genpts = 0;
+static int lowres = 0;
+static int decoder_reorder_pts = -1;
+static int autoexit;
+static int exit_on_keydown;
+static int exit_on_mousedown;
+static int loop = 1;
+static int framedrop = -1;
+static int infinite_buffer = -1;
+static enum ShowMode show_mode = SHOW_MODE_NONE;
+static const char *audio_codec_name;
+static const char *subtitle_codec_name;
+static const char *video_codec_name;
+double rdftspeed = 0.02;
+static int64_t cursor_last_shown;
+static int cursor_hidden = 0;
+static const char **vfilters_list = NULL;
+static int nb_vfilters = 0;
+static char *afilters = NULL;
+static int autorotate = 1;
+static int find_stream_info = 1;
+static int filter_nbthreads = 0;
+static int enable_vulkan = 0;
+static char *vulkan_params = NULL;
+static const char *hwaccel = NULL;
+
+/* current context */
+static int is_full_screen;
+static int64_t audio_callback_time;
+
+#define FF_QUIT_EVENT    (SDL_USEREVENT + 2)
+
+static SDL_Window *window;
+static SDL_Renderer *renderer;
+static SDL_RendererInfo renderer_info = {0};
+static SDL_AudioDeviceID audio_dev;
+
+// static VkRenderer *vk_renderer;
+
+static const struct TextureFormatEntry {
+    enum AVPixelFormat format;
+    int texture_fmt;
+} sdl_texture_format_map[] = {
+    { AV_PIX_FMT_RGB8,           SDL_PIXELFORMAT_RGB332 },
+    { AV_PIX_FMT_RGB444,         SDL_PIXELFORMAT_RGB444 },
+    { AV_PIX_FMT_RGB555,         SDL_PIXELFORMAT_RGB555 },
+    { AV_PIX_FMT_BGR555,         SDL_PIXELFORMAT_BGR555 },
+    { AV_PIX_FMT_RGB565,         SDL_PIXELFORMAT_RGB565 },
+    { AV_PIX_FMT_BGR565,         SDL_PIXELFORMAT_BGR565 },
+    { AV_PIX_FMT_RGB24,          SDL_PIXELFORMAT_RGB24 },
+    { AV_PIX_FMT_BGR24,          SDL_PIXELFORMAT_BGR24 },
+    { AV_PIX_FMT_0RGB32,         SDL_PIXELFORMAT_RGB888 },
+    { AV_PIX_FMT_0BGR32,         SDL_PIXELFORMAT_BGR888 },
+    { AV_PIX_FMT_NE(RGB0, 0BGR), SDL_PIXELFORMAT_RGBX8888 },
+    { AV_PIX_FMT_NE(BGR0, 0RGB), SDL_PIXELFORMAT_BGRX8888 },
+    { AV_PIX_FMT_RGB32,          SDL_PIXELFORMAT_ARGB8888 },
+    { AV_PIX_FMT_RGB32_1,        SDL_PIXELFORMAT_RGBA8888 },
+    { AV_PIX_FMT_BGR32,          SDL_PIXELFORMAT_ABGR8888 },
+    { AV_PIX_FMT_BGR32_1,        SDL_PIXELFORMAT_BGRA8888 },
+    { AV_PIX_FMT_YUV420P,        SDL_PIXELFORMAT_IYUV },
+    { AV_PIX_FMT_YUYV422,        SDL_PIXELFORMAT_YUY2 },
+    { AV_PIX_FMT_UYVY422,        SDL_PIXELFORMAT_UYVY },
+};
+
+// =============================================================================
+//   User Options
+// =============================================================================
+
+
+
+
+
+
+
+
+
+
+// =============================================================================
 //   Main Loop
 // =============================================================================
 
