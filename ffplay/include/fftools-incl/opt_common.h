@@ -21,7 +21,11 @@
 #ifndef FFTOOLS_OPT_COMMON_H
 #define FFTOOLS_OPT_COMMON_H
 
-// #include "config.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include "config.h"
 
 #include "cmdutils.h"
 
@@ -227,5 +231,10 @@ int opt_cpucount(void *optctx, const char *opt, const char *arg);
     { "cpucount",     OPT_TYPE_FUNC, OPT_FUNC_ARG | OPT_EXPERT, { .func_arg = opt_cpucount },     "force specific cpu count", "count" },     \
     { "hide_banner",  OPT_TYPE_BOOL, OPT_EXPERT,            {&hide_banner},                   "do not show program banner", "hide_banner" }, \
     CMDUTILS_COMMON_OPTIONS_AVDEVICE                                                                                    \
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FFTOOLS_OPT_COMMON_H */

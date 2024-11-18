@@ -22,9 +22,13 @@
 #ifndef FFTOOLS_CMDUTILS_H
 #define FFTOOLS_CMDUTILS_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 
-// #include "config.h"
+#include "config.h"
 #include "libavcodec/avcodec.h"
 #include "libavfilter/avfilter.h"
 #include "libavformat/avformat.h"
@@ -544,5 +548,9 @@ void remove_avoptions(AVDictionary **a, AVDictionary *b);
 int check_avoptions(AVDictionary *m);
 
 int cmdutils_isalnum(char c);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FFTOOLS_CMDUTILS_H */
