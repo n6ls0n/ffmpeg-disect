@@ -1113,7 +1113,7 @@ static int audio_decode_frame(VideoState *is)
 
     data_size = av_samples_get_buffer_size(NULL, af->frame->ch_layout.nb_channels,
                                            af->frame->nb_samples,
-                                           af->frame->format, 1);
+                                           static_cast<AVSampleFormat>(af->frame->format), 1);
 
     wanted_nb_samples = synchronize_audio(is, af->frame->nb_samples);
 
