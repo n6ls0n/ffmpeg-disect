@@ -697,13 +697,13 @@ static int opt_sync(void *optctx, const char *opt, const char *arg)
 
 static int opt_show_mode(void *optctx, const char *opt, const char *arg)
 {
-    show_mode = !strcmp(arg, "video") ? SHOW_MODE_VIDEO :
-                !strcmp(arg, "waves") ? SHOW_MODE_WAVES :
-                !strcmp(arg, "rdft" ) ? SHOW_MODE_RDFT  : SHOW_MODE_NONE;
+    show_mode = !strcmp(arg, "video") ? VideoState::SHOW_MODE_VIDEO :
+                !strcmp(arg, "waves") ? VideoState::SHOW_MODE_WAVES :
+                !strcmp(arg, "rdft" ) ? VideoState::SHOW_MODE_RDFT  : VideoState::SHOW_MODE_NONE;
 
-    if (show_mode == SHOW_MODE_NONE) {
+    if (show_mode == VideoState::SHOW_MODE_NONE) {
         double num;
-        int ret = parse_number(opt, arg, OPT_TYPE_INT, 0, SHOW_MODE_NB-1, &num);
+        int ret = parse_number(opt, arg, OPT_TYPE_INT, 0, VideoState::SHOW_MODE_NB-1, &num);
         if (ret < 0)
             return ret;
         show_mode = num;
@@ -1784,8 +1784,8 @@ static void toggle_audio_display(VideoState *is)
 {
     int next = is->show_mode;
     do {
-        next = (next + 1) % SHOW_MODE_NB;
-    } while (next != is->show_mode && (next == SHOW_MODE_VIDEO && !is->video_st || next != SHOW_MODE_VIDEO && !is->audio_st));
+        next = (next + 1) % VideoState::SHOW_MODE_NB;
+    } while (next != is->show_mode && (next == VideoState::SHOW_MODE_VIDEO && !is->video_st || next != VideoState::SHOW_MODE_VIDEO && !is->audio_st));
     if (is->show_mode != next) {
         is->force_refresh = 1;
         is->show_mode = next;
@@ -2190,8 +2190,8 @@ static int read_thread(void *arg)
     if (st_index[AVMEDIA_TYPE_VIDEO] >= 0) {
         ret = stream_component_open(is, st_index[AVMEDIA_TYPE_VIDEO]);
     }
-    if (is->show_mode == SHOW_MODE_NONE)
-        is->show_mode = ret >= 0 ? SHOW_MODE_VIDEO : SHOW_MODE_RDFT;
+    if (is->show_mode == VideoState::SHOW_MODE_NONE)
+        is->show_mode = ret >= 0 ? VideoState::SHOW_MODE_VIDEO : VideoState::SHOW_MODE_RDFT;
 
     if (st_index[AVMEDIA_TYPE_SUBTITLE] >= 0) {
         stream_component_open(is, st_index[AVMEDIA_TYPE_SUBTITLE]);
@@ -2512,7 +2512,7 @@ static void sdl_audio_callback(void *opaque, Uint8 *stream, int len)
                is->audio_buf = NULL;
                is->audio_buf_size = SDL_AUDIO_MIN_BUFFER_SIZE / is->audio_tgt.frame_size * is->audio_tgt.frame_size;
            } else {
-               if (is->show_mode != SHOW_MODE_VIDEO)
+               if (is->show_mode != VideoState::SHOW_MODE_VIDEO)
                    update_sample_display(is, (int16_t *)is->audio_buf, audio_size);
                is->audio_buf_size = audio_size;
            }
@@ -2681,7 +2681,7 @@ static void video_refresh(void *opaque, double *remaining_time)
     if (!is->paused && get_master_sync_type(is) == AV_SYNC_EXTERNAL_CLOCK && is->realtime)
         check_external_clock_speed(is);
 
-    if (!display_disable && is->show_mode != SHOW_MODE_VIDEO && is->audio_st) {
+    if (!display_disable && is->show_mode != VideoState::SHOW_MODE_VIDEO && is->audio_st) {
         time = av_gettime_relative() / 1000000.0;
         if (is->force_refresh || is->last_vis_time + rdftspeed < time) {
             video_display(is);
@@ -2784,7 +2784,7 @@ retry:
         }
 display:
         /* display picture */
-        if (!display_disable && is->force_refresh && is->show_mode == SHOW_MODE_VIDEO && is->pictq.rindex_shown)
+        if (!display_disable && is->force_refresh && is->show_mode == VideoState::SHOW_MODE_VIDEO && is->pictq.rindex_shown)
             video_display(is);
     }
     is->force_refresh = 0;
@@ -2846,7 +2846,7 @@ static void video_display(VideoState *is)
 
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
-    if (is->audio_st && is->show_mode != SHOW_MODE_VIDEO)
+    if (is->audio_st && is->show_mode != VideoState::SHOW_MODE_VIDEO)
         video_audio_display(is);
     else if (is->video_st)
         video_image_display(is);
@@ -2875,7 +2875,7 @@ static void video_audio_display(VideoState *s)
     channels = s->audio_tgt.ch_layout.nb_channels;
     nb_display_channels = channels;
     if (!s->paused) {
-        int data_used= s->show_mode == SHOW_MODE_WAVES ? s->width : (2*nb_freq);
+        int data_used= s->show_mode == VideoState::SHOW_MODE_WAVES ? s->width : (2*nb_freq);
         n = 2 * channels;
         delay = s->audio_write_buf_size;
         delay /= n;
@@ -2892,7 +2892,7 @@ static void video_audio_display(VideoState *s)
             delay = data_used;
 
         i_start= x = compute_mod(s->sample_array_index - delay * channels, SAMPLE_ARRAY_SIZE);
-        if (s->show_mode == SHOW_MODE_WAVES) {
+        if (s->show_mode == VideoState::SHOW_MODE_WAVES) {
             h = INT_MIN;
             for (i = 0; i < 1000; i += channels) {
                 int idx = (SAMPLE_ARRAY_SIZE + x - i) % SAMPLE_ARRAY_SIZE;
@@ -2913,7 +2913,7 @@ static void video_audio_display(VideoState *s)
         i_start = s->last_i_start;
     }
 
-    if (s->show_mode == SHOW_MODE_WAVES) {
+    if (s->show_mode == VideoState::SHOW_MODE_WAVES) {
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 
         /* total height for one channel */
@@ -2965,7 +2965,7 @@ static void video_audio_display(VideoState *s)
         }
         if (err < 0 || !s->rdft_data) {
             av_log(NULL, AV_LOG_ERROR, "Failed to allocate buffers for RDFT, switching to waves display\n");
-            s->show_mode = SHOW_MODE_WAVES;
+            s->show_mode = VideoState::SHOW_MODE_WAVES;
         } else {
             float *data_in[2];
             AVComplexFloat *data[2];
@@ -3610,7 +3610,7 @@ static void refresh_loop_wait_event(VideoState *is, SDL_Event *event) {
         if (remaining_time > 0.0)
             av_usleep((int64_t)(remaining_time * 1000000.0));
         remaining_time = REFRESH_RATE;
-        if (is->show_mode != SHOW_MODE_NONE && (!is->paused || is->force_refresh))
+        if (is->show_mode != VideoState::SHOW_MODE_NONE && (!is->paused || is->force_refresh))
             video_refresh(is, &remaining_time);
         SDL_PumpEvents();
     }
@@ -3721,7 +3721,7 @@ static void event_loop(VideoState *cur_stream)
                 stream_cycle_channel(cur_stream, AVMEDIA_TYPE_SUBTITLE);
                 break;
             case SDLK_w:
-                if (cur_stream->show_mode == SHOW_MODE_VIDEO && cur_stream->vfilter_idx < nb_vfilters - 1) {
+                if (cur_stream->show_mode == VideoState::SHOW_MODE_VIDEO && cur_stream->vfilter_idx < nb_vfilters - 1) {
                     if (++cur_stream->vfilter_idx >= nb_vfilters)
                         cur_stream->vfilter_idx = 0;
                 } else {
