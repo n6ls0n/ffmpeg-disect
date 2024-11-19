@@ -2,6 +2,11 @@
  * Various utilities for command line tools
  */
 
+
+// =============================================================================
+//                              Include Statements
+// =============================================================================
+
 #ifndef FFTOOLS_CMDUTILS_H
 #define FFTOOLS_CMDUTILS_H
 
@@ -21,7 +26,9 @@ extern "C" {
 #undef main /* We don't want SDL to override our main() */
 #endif
 
-#endif // FFTOOLS_CMDUTILS_H  // Add this line
+// =============================================================================
+//                              Global Variables & Data Types
+// =============================================================================
 
 /**
  * program name, defined by the program for show_version().
@@ -38,47 +45,16 @@ extern AVDictionary *swr_opts;
 extern AVDictionary *format_opts, *codec_opts;
 extern int hide_banner;
 
-/**
- * Initialize dynamic library loading
- */
-void init_dynload(void);
-
-/**
- * Uninitialize the cmdutils option system, in particular
- * free the *_opts contexts and their contents.
- */
-void uninit_opts(void);
-
-/**
- * Trivial log callback.
- * Only suitable for opt_help and similar since it lacks prefix handling.
- */
-void log_callback_help(void* ptr, int level, const char* fmt, va_list vl);
-
-/**
- * Fallback for options that are not explicitly handled, these will be
- * parsed through AVOptions.
- */
-int opt_default(void *optctx, const char *opt, const char *arg);
-
-/**
- * Limit the execution time.
- */
-int opt_timelimit(void *optctx, const char *opt, const char *arg);
-
-/**
- * Parse a string and return its corresponding value as a double.
- *
- * @param context the context of the value to be set (e.g. the
- * corresponding command line option name)
- * @param numstr the string to be parsed
- * @param type the type (OPT_INT64 or OPT_FLOAT) as which the
- * string should be parsed
- * @param min the minimum valid accepted value
- * @param max the maximum valid accepted value
- */
-int parse_number(const char *context, const char *numstr, enum OptionType type,
-                 double min, double max, double *dst);
+enum OptionType {
+    OPT_TYPE_FUNC,
+    OPT_TYPE_BOOL,
+    OPT_TYPE_STRING,
+    OPT_TYPE_INT,
+    OPT_TYPE_INT64,
+    OPT_TYPE_FLOAT,
+    OPT_TYPE_DOUBLE,
+    OPT_TYPE_TIME,
+};
 
 enum StreamList {
     STREAM_LIST_ALL,
@@ -115,28 +91,6 @@ typedef struct StreamSpecifier {
 
     char                *remainder;
 } StreamSpecifier;
-
-/**
- * Parse a stream specifier string into a form suitable for matching.
- *
- * @param ss Parsed specifier will be stored here; must be uninitialized
- *           with stream_specifier_uninit() when no longer needed.
- * @param spec String containing the stream specifier to be parsed.
- * @param allow_remainder When 1, the part of spec that is left after parsing
- *                        the stream specifier is stored into ss->remainder.
- *                        When 0, any remainder will cause parsing to fail.
- */
-int stream_specifier_parse(StreamSpecifier *ss, const char *spec,
-                           int allow_remainder, void *logctx);
-
-/**
- * @return 1 if st matches the parsed specifier, 0 if it does not
- */
-unsigned stream_specifier_match(const StreamSpecifier *ss,
-                                const AVFormatContext *s, const AVStream *st,
-                                void *logctx);
-
-void stream_specifier_uninit(StreamSpecifier *ss);
 
 typedef struct SpecifierOpt {
     // original specifier or empty string
@@ -239,57 +193,7 @@ typedef struct OptionDef {
     } u1;
 } OptionDef;
 
-/**
- * Print help for all options matching specified flags.
- *
- * @param options a list of options
- * @param msg title of this group. Only printed if at least one option matches.
- * @param req_flags print only options which have all those flags set.
- * @param rej_flags don't print options which have any of those flags set.
- */
-void show_help_options(const OptionDef *options, const char *msg, int req_flags,
-                       int rej_flags);
 
-/**
- * Show help for all options with given flags in class and all its
- * children.
- */
-void show_help_children(const AVClass *avclass, int flags);
-
-/**
- * Per-fftool specific help handler. Implemented in each
- * fftool, called by show_help().
- */
-void show_help_default(const char *opt, const char *arg);
-
-/**
- * Parse the command line arguments.
- *
- * @param optctx an opaque options context
- * @param argc   number of command line arguments
- * @param argv   values of command line arguments
- * @param options Array with the definitions required to interpret every
- * option of the form: -option_name [argument]
- * @param parse_arg_function Name of the function called to process every
- * argument without a leading option name flag. NULL if such arguments do
- * not have to be processed.
- */
-int parse_options(void *optctx, int argc, char **argv, const OptionDef *options,
-                  int (* parse_arg_function)(void *optctx, const char*));
-
-/**
- * Parse one given option.
- *
- * @return on success 1 if arg was consumed, 0 otherwise; negative number on error
- */
-int parse_option(void *optctx, const char *opt, const char *arg,
-                 const OptionDef *options);
-
-/**
- * An option extracted from the commandline.
- * Cannot use AVDictionary because of options like -map which can be
- * used multiple times.
- */
 typedef struct Option {
     const OptionDef  *opt;
     const char       *key;
@@ -344,6 +248,129 @@ typedef struct OptionParseContext {
     /* parsing state */
     OptionGroup cur_group;
 } OptionParseContext;
+
+
+// =============================================================================
+//                              Functions
+// =============================================================================
+
+
+/**
+ * Initialize dynamic library loading
+ */
+void init_dynload(void);
+
+/**
+ * Uninitialize the cmdutils option system, in particular
+ * free the *_opts contexts and their contents.
+ */
+void uninit_opts(void);
+
+/**
+ * Trivial log callback.
+ * Only suitable for opt_help and similar since it lacks prefix handling.
+ */
+void log_callback_help(void* ptr, int level, const char* fmt, va_list vl);
+
+/**
+ * Fallback for options that are not explicitly handled, these will be
+ * parsed through AVOptions.
+ */
+int opt_default(void *optctx, const char *opt, const char *arg);
+
+/**
+ * Limit the execution time.
+ */
+int opt_timelimit(void *optctx, const char *opt, const char *arg);
+
+/**
+ * Parse a string and return its corresponding value as a double.
+ *
+ * @param context the context of the value to be set (e.g. the
+ * corresponding command line option name)
+ * @param numstr the string to be parsed
+ * @param type the type (OPT_INT64 or OPT_FLOAT) as which the
+ * string should be parsed
+ * @param min the minimum valid accepted value
+ * @param max the maximum valid accepted value
+ */
+int parse_number(const char *context, const char *numstr, enum OptionType type,
+                 double min, double max, double *dst);
+
+
+/**
+ * Parse a stream specifier string into a form suitable for matching.
+ *
+ * @param ss Parsed specifier will be stored here; must be uninitialized
+ *           with stream_specifier_uninit() when no longer needed.
+ * @param spec String containing the stream specifier to be parsed.
+ * @param allow_remainder When 1, the part of spec that is left after parsing
+ *                        the stream specifier is stored into ss->remainder.
+ *                        When 0, any remainder will cause parsing to fail.
+ */
+int stream_specifier_parse(StreamSpecifier *ss, const char *spec,
+                           int allow_remainder, void *logctx);
+
+/**
+ * @return 1 if st matches the parsed specifier, 0 if it does not
+ */
+unsigned stream_specifier_match(const StreamSpecifier *ss,
+                                const AVFormatContext *s, const AVStream *st,
+                                void *logctx);
+
+void stream_specifier_uninit(StreamSpecifier *ss);
+
+/**
+ * Print help for all options matching specified flags.
+ *
+ * @param options a list of options
+ * @param msg title of this group. Only printed if at least one option matches.
+ * @param req_flags print only options which have all those flags set.
+ * @param rej_flags don't print options which have any of those flags set.
+ */
+void show_help_options(const OptionDef *options, const char *msg, int req_flags,
+                       int rej_flags);
+
+/**
+ * Show help for all options with given flags in class and all its
+ * children.
+ */
+void show_help_children(const AVClass *avclass, int flags);
+
+/**
+ * Per-fftool specific help handler. Implemented in each
+ * fftool, called by show_help().
+ */
+void show_help_default(const char *opt, const char *arg);
+
+/**
+ * Parse the command line arguments.
+ *
+ * @param optctx an opaque options context
+ * @param argc   number of command line arguments
+ * @param argv   values of command line arguments
+ * @param options Array with the definitions required to interpret every
+ * option of the form: -option_name [argument]
+ * @param parse_arg_function Name of the function called to process every
+ * argument without a leading option name flag. NULL if such arguments do
+ * not have to be processed.
+ */
+int parse_options(void *optctx, int argc, char **argv, const OptionDef *options,
+                  int (* parse_arg_function)(void *optctx, const char*));
+
+/**
+ * Parse one given option.
+ *
+ * @return on success 1 if arg was consumed, 0 otherwise; negative number on error
+ */
+int parse_option(void *optctx, const char *opt, const char *arg,
+                 const OptionDef *options);
+
+/**
+ * An option extracted from the commandline.
+ * Cannot use AVDictionary because of options like -map which can be
+ * used multiple times.
+ */
 
 /**
  * Parse an options group and write results into optctx.
