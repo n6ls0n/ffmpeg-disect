@@ -17,10 +17,6 @@ extern "C" {
 #include "libavformat/avformat.h"
 #include "libswscale/swscale.h"
 
-#ifdef __cplusplus
-}
-#endif
-
 #ifdef _WIN32
 #undef main /* We don't want SDL to override our main() */
 #endif
@@ -69,17 +65,6 @@ int opt_default(void *optctx, const char *opt, const char *arg);
  * Limit the execution time.
  */
 int opt_timelimit(void *optctx, const char *opt, const char *arg);
-
-enum OptionType {
-    OPT_TYPE_FUNC,
-    OPT_TYPE_BOOL,
-    OPT_TYPE_STRING,
-    OPT_TYPE_INT,
-    OPT_TYPE_INT64,
-    OPT_TYPE_FLOAT,
-    OPT_TYPE_DOUBLE,
-    OPT_TYPE_TIME,
-};
 
 /**
  * Parse a string and return its corresponding value as a double.
