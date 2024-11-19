@@ -706,7 +706,7 @@ static int opt_show_mode(void *optctx, const char *opt, const char *arg)
         int ret = parse_number(opt, arg, OPT_TYPE_INT, 0, VideoState::SHOW_MODE_NB-1, &num);
         if (ret < 0)
             return ret;
-        show_mode = num;
+        show_mode = static_cast<VideoState::ShowMode>(num);
     }
     return 0;
 }
