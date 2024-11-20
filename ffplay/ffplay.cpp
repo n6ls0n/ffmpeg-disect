@@ -2585,10 +2585,10 @@ static void video_image_display(VideoState *is)
     SDL_Rect rect;
 
     vp = frame_queue_peek_last(&is->pictq);
-    if (vk_renderer) {
-        vk_renderer_display(vk_renderer, vp->frame);
-        return;
-    }
+    // if (vk_renderer) {
+    //     vk_renderer_display(vk_renderer, vp->frame);
+    //     return;
+    // }
 
     if (is->subtitle_st) {
         if (frame_queue_nb_remaining(&is->subpq) > 0) {
