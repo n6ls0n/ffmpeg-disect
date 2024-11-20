@@ -1788,7 +1788,7 @@ static void toggle_audio_display(VideoState *is)
     } while (next != is->show_mode && (next == VideoState::SHOW_MODE_VIDEO && !is->video_st || next != VideoState::SHOW_MODE_VIDEO && !is->audio_st));
     if (is->show_mode != next) {
         is->force_refresh = 1;
-        is->show_mode = next;
+        is->show_mode = static_cast<VideoState::ShowMode>(next);
     }
 }
 
