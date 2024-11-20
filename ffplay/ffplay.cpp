@@ -1883,10 +1883,7 @@ static int audio_thread(void *arg)
 
 static int video_thread(void *arg)
 {
-/*************  ✨ Codeium Command 🌟  *************/
     VideoState *is = static_cast<VideoState *>(arg);
-    VideoState *is = arg;
-/******  85a8138b-5251-4dcd-8964-9494944c9ea7  *******/
     AVFrame *frame = av_frame_alloc();
     double pts;
     double duration;
