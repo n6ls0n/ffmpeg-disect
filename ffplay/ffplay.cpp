@@ -65,7 +65,7 @@ extern "C" {
 #endif
 
 // =============================================================================
-//                              Environment Variables
+//                              Macros & Global Variables
 // =============================================================================
 
 const char program_name[] = "ffplay";
@@ -1582,7 +1582,7 @@ static VideoState *stream_open(const char *filename,
 {
     VideoState *is;
 
-    is = av_mallocz(sizeof(VideoState));
+    is = static_cast<VideoState*>(av_mallocz(sizeof(VideoState)));
     if (!is)
         return NULL;
     is->last_video_stream = is->video_stream = -1;
