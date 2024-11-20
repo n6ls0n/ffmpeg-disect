@@ -1938,7 +1938,7 @@ static int video_thread(void *arg)
             filt_out = is->out_video_filter;
             last_w = frame->width;
             last_h = frame->height;
-            last_format = frame->format;
+            last_format = static_cast<enum AVPixelFormat>(frame->format);
             last_serial = is->viddec.pkt_serial;
             last_vfilter_idx = is->vfilter_idx;
             frame_rate = av_buffersink_get_frame_rate(filt_out);
