@@ -2497,7 +2497,7 @@ static int synchronize_audio(VideoState *is, int nb_samples)
 /* prepare a new audio buffer */
 static void sdl_audio_callback(void *opaque, Uint8 *stream, int len)
 {
-    VideoState *is = opaque;
+    VideoState *is = static_cast<VideoState *>(opaque);
     int audio_size, len1;
 
     audio_callback_time = av_gettime_relative();
