@@ -2671,7 +2671,7 @@ static void video_image_display(VideoState *is)
 /* called to display each frame */
 static void video_refresh(void *opaque, double *remaining_time)
 {
-    VideoState *is = opaque;
+    VideoState *is = static_cast<VideoState *>(opaque);
     double time;
 
     Frame *sp, *sp2;
