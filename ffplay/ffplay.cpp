@@ -1895,7 +1895,7 @@ static int video_thread(void *arg)
     AVFilterContext *filt_out = NULL, *filt_in = NULL;
     int last_w = 0;
     int last_h = 0;
-    enum AVPixelFormat last_format = -2;
+    enum AVPixelFormat last_format = static_cast<enum AVPixelFormat>(-2);
     int last_serial = -1;
     int last_vfilter_idx = 0;
 
