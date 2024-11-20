@@ -3269,11 +3269,11 @@ static int configure_video_filters(AVFilterGraph *graph, VideoState *is, const c
     if ((ret = av_opt_set_array(filt_out, "pixel_formats", AV_OPT_SEARCH_CHILDREN,
                                 0, nb_pix_fmts, AV_OPT_TYPE_PIXEL_FMT, pix_fmts)) < 0)
         goto fail;
-    if (!vk_renderer &&
-        (ret = av_opt_set_array(filt_out, "colorspaces", AV_OPT_SEARCH_CHILDREN,
-                                0, FF_ARRAY_ELEMS(sdl_supported_color_spaces),
-                                AV_OPT_TYPE_INT, sdl_supported_color_spaces)) < 0)
-        goto fail;
+    // if (!vk_renderer &&
+    //     (ret = av_opt_set_array(filt_out, "colorspaces", AV_OPT_SEARCH_CHILDREN,
+    //                             0, FF_ARRAY_ELEMS(sdl_supported_color_spaces),
+    //                             AV_OPT_TYPE_INT, sdl_supported_color_spaces)) < 0)
+    //     goto fail;
 
     ret = avfilter_init_dict(filt_out, NULL);
     if (ret < 0)
