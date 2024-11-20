@@ -2957,7 +2957,7 @@ static void video_audio_display(VideoState *s)
             av_freep(&s->rdft_data);
             s->rdft_bits = rdft_bits;
             s->real_data = static_cast<float*>(av_malloc_array(nb_freq, 4 * sizeof(*s->real_data)));
-            s->rdft_data = av_malloc_array(nb_freq + 1, 2 *sizeof(*s->rdft_data));
+            s->rdft_data = static_cast<AVComplexFloat*>(av_malloc_array(nb_freq + 1, 2 *sizeof(*s->rdft_data)));
             err = av_tx_init(&s->rdft, &s->rdft_fn, AV_TX_FLOAT_RDFT,
                              0, 1 << rdft_bits, &rdft_scale, 0);
         }
