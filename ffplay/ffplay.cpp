@@ -1986,7 +1986,7 @@ static int video_thread(void *arg)
 
 static int subtitle_thread(void *arg)
 {
-    VideoState *is = arg;
+    VideoState *is = static_cast<VideoState *>(arg);
     Frame *sp;
     int got_subtitle;
     double pts;
