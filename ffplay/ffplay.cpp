@@ -2351,8 +2351,7 @@ static int read_thread(void *arg)
 
 static int decode_interrupt_cb(void *ctx)
 {
-    VideoState *is = ctx;
-    return is->abort_request;
+    return static_cast<VideoState *>(ctx)->abort_request;
 }
 
 static int is_realtime(AVFormatContext *s)
