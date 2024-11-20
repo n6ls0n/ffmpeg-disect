@@ -3845,8 +3845,8 @@ static void event_loop(VideoState *cur_stream)
                         SDL_DestroyTexture(cur_stream->vis_texture);
                         cur_stream->vis_texture = NULL;
                     }
-                    if (vk_renderer)
-                        vk_renderer_resize(vk_renderer, screen_width, screen_height);
+                    // if (vk_renderer)
+                    //     vk_renderer_resize(vk_renderer, screen_width, screen_height);
                 case SDL_WINDOWEVENT_EXPOSED:
                     cur_stream->force_refresh = 1;
             }
