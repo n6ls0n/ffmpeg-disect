@@ -1713,7 +1713,7 @@ static void stream_cycle_channel(VideoState *is, int codec_type)
     if (p && stream_index != -1)
         stream_index = p->stream_index[stream_index];
     av_log(NULL, AV_LOG_INFO, "Switch %s stream from #%d to #%d\n",
-           av_get_media_type_string(codec_type),
+           av_get_media_type_string(static_cast<AVMediaType>(codec_type)),
            old_index,
            stream_index);
 
