@@ -1806,7 +1806,7 @@ static void update_volume(VideoState *is, int sign, double step)
 
 static int audio_thread(void *arg)
 {
-    VideoState *is = arg;
+    VideoState *is = static_cast<VideoState *>(arg);
     AVFrame *frame = av_frame_alloc();
     Frame *af;
     int last_serial = -1;
