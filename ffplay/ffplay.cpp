@@ -2021,7 +2021,7 @@ static int subtitle_thread(void *arg)
 /* this thread gets the stream from the disk or the network */
 static int read_thread(void *arg)
 {
-    VideoState *is = arg;
+    VideoState *is = static_cast<VideoState *>(arg);
     AVFormatContext *ic = NULL;
     int err, i, ret;
     int st_index[AVMEDIA_TYPE_NB];
