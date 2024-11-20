@@ -1425,7 +1425,7 @@ static int stream_component_open(VideoState *is, int stream_index)
     const char *forced_codec_name = NULL;
     AVDictionary *opts = NULL;
     int sample_rate;
-    AVChannelLayout ch_layout = { 0 };
+    AVChannelLayout ch_layout = { static_cast<AVChannelOrder>(0) };
     int ret = 0;
     int stream_lowres = lowres;
 
