@@ -2647,7 +2647,7 @@ static void video_image_display(VideoState *is)
         vp->flip_v = vp->frame->linesize[0] < 0;
     }
 
-    SDL_RenderCopyEx(renderer, is->vid_texture, NULL, &rect, 0, NULL, vp->flip_v ? SDL_FLIP_VERTICAL : 0);
+    SDL_RenderCopyEx(renderer, is->vid_texture, NULL, &rect, 0, NULL, static_cast<SDL_RendererFlip>(vp->flip_v ? SDL_FLIP_VERTICAL : 0));
     set_sdl_yuv_conversion_mode(NULL);
     if (sp) {
 #if USE_ONEPASS_SUBTITLE_RENDER
