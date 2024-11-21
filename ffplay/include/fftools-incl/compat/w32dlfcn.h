@@ -66,8 +66,14 @@ static inline HMODULE win32_dlopen(const char *name)
 {
     wchar_t *name_w;
     HMODULE module = NULL;
-    if (utf8towchar(name, &name_w))
-        name_w = NULL;
+    int len = MultiByteToWideChar(CP_UTF8, 0, name, -1, NULL, 0);
+    if (!len)
+        return NULL;
+    name_w = av_malloc_array(len, sizeof(*name_w));
+    if (!MultiByteToWideChar(CP_UTF8, 0, name, -1, name_w, len)) {
+        av_free(name_w);
+        return NULL;
+    }
 #if _WIN32_WINNT < 0x0602
     // On Win7 and earlier we check if KB2533623 is available
     if (!GetProcAddress(GetModuleHandleW(L"kernel32.dll"), "SetDefaultDllDirectories")) {
