@@ -30,6 +30,34 @@
 // #include "libavutil/wchar_filename.h"
 
 av_warn_unused_result
+static inline int wchartocp(unsigned int code_page, const wchar_t *filename_w,
+                            char **filename)
+{
+    DWORD flags = code_page == CP_UTF8 ? WC_ERR_INVALID_CHARS : 0;
+    int num_chars = WideCharToMultiByte(code_page, flags, filename_w, -1,
+                                        NULL, 0, NULL, NULL);
+    if (num_chars <= 0) {
+        *filename = NULL;
+        errno = EINVAL;
+        return -1;
+    }
+    *filename = (char *)av_malloc_array(num_chars, sizeof **filename);
+    if (!*filename) {
+        errno = ENOMEM;
+        return -1;
+    }
+    WideCharToMultiByte(code_page, flags, filename_w, -1,
+                        *filename, num_chars, NULL, NULL);
+    return 0;
+}
+
+av_warn_unused_result
+static inline int wchartoutf8(const wchar_t *filename_w, char **filename)
+{
+    return wchartocp(CP_UTF8, filename_w, filename);
+}
+
+av_warn_unused_result
 static inline int utf8towchar(const char *filename_utf8, wchar_t **filename_w)
 {
     int num_chars;
@@ -47,8 +75,6 @@ static inline int utf8towchar(const char *filename_utf8, wchar_t **filename_w)
     MultiByteToWideChar(CP_UTF8, 0, filename_utf8, -1, *filename_w, num_chars);
     return 0;
 }
-
-
 
 static inline wchar_t *get_module_filename(HMODULE module)
 {
