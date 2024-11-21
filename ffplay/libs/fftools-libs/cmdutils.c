@@ -32,15 +32,15 @@ extern "C" {
 #include "libavutil/avstring.h"
 #include "libavutil/bprint.h"
 #include "libavutil/display.h"
-#include "libavutil/getenv_utf8.h"
-#include "libavutil/libm.h"
+// #include "libavutil/getenv_utf8.h"
+// #include "libavutil/libm.h"
 #include "libavutil/mem.h"
 #include "libavutil/parseutils.h"
 #include "libavutil/eval.h"
 #include "libavutil/dict.h"
 #include "libavutil/opt.h"
 #include "cmdutils.h"
-#include "fopen_utf8.h"
+// #include "fopen_utf8.h"
 #include "opt_common.h"
 #ifdef _WIN32
 #include <windows.h>
