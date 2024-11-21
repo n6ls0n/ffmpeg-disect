@@ -23,6 +23,7 @@
     "type_traits": "cpp",
     "utility": "cpp",
     "variant": "cpp",
-    "swresample.h": "c"
+    "swresample.h": "c",
+    "getenv_utf8.h": "c"
 }
 }
