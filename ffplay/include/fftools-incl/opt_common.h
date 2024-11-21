@@ -13,6 +13,17 @@ extern "C" {
 // =============================================================================
 
 #define CONFIG_AVDEVICE 1
+#define CONFIG_AVDEVICE 1
+#define CONFIG_AVUTIL 1
+#define CONFIG_AVCODEC 1
+#define CONFIG_AVFORMAT 1
+#define CONFIG_AVFILTER 1
+#define CONFIG_SWSCALE 1
+#define CONFIG_SWRESAMPLE 1
+#define CONFIG_POSTPROC 1
+#define FFMPEG_CONFIGURATION ""
+#define CONFIG_THIS_YEAR 2024
+#define CC_IDENT "gcc 14.2.0 (Rev2, Built by MSYS2 project)"
 
 
 // =============================================================================
