@@ -3921,7 +3921,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 #else
 int main(int argc, char** argv)
 #endif
+// int main(int argc, char** argv)
 {
+    int flags, ret;
+    VideoState *is;
+
+    init_dynload();
+
     // Initialize SDL
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0)
     {
