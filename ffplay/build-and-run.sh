@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Redirect all output to output.txt
+exec > output.txt 2>&1
+
 # Check if build directory exists and remove it if it does
 if [ -d "build" ]; then
     echo "Removing existing build directory..."
