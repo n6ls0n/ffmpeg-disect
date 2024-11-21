@@ -32,6 +32,229 @@ extern "C" {
 
 #define FFMPEG_DATADIR "/usr/local/share/ffmpeg"
 
+
+// =============================================================================
+//                             Imported Functions
+// =============================================================================
+
+#include "compat/w32dlfcn.h"
+
+
+
+// From "libavutil/getenv_utf8.h"
+static inline void freeenv_utf8(char *var)
+{
+    av_free(var);
+}
+
+// From "libavutil/getenv_utf8.h"
+static inline char *getenv_utf8(const char *varname)
+{
+    wchar_t *varname_w, *var_w;
+    char *var;
+
+    if (utf8towchar(varname, &varname_w))
+        return NULL;
+    if (!varname_w)
+        return NULL;
+
+    var_w = _wgetenv(varname_w);
+    av_free(varname_w);
+
+    if (!var_w)
+        return NULL;
+    if (wchartoutf8(var_w, &var))
+        return NULL;
+
+    return var;
+
+    // No CP_ACP fallback compared to other *_utf8() functions:
+    // non UTF-8 strings must not be returned.
+}
+
+//From libavutil/wchar_filename.h
+static inline int path_is_extended(const wchar_t *path)
+{
+    if (path[0] == L'\\' && (path[1] == L'\\' || path[1] == L'?') && path[2] == L'?' && path[3] == L'\\')
+        return 1;
+
+    return 0;
+}
+
+// From libavutil/wchar_filename.h
+static inline int get_full_path_name(wchar_t **ppath_w)
+{
+    int num_chars;
+    wchar_t *temp_w;
+
+    num_chars = GetFullPathNameW(*ppath_w, 0, NULL, NULL);
+    if (num_chars <= 0) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    temp_w = (wchar_t *)av_calloc(num_chars, sizeof(wchar_t));
+    if (!temp_w) {
+        errno = ENOMEM;
+        return -1;
+    }
+
+    num_chars = GetFullPathNameW(*ppath_w, num_chars, temp_w, NULL);
+    if (num_chars <= 0) {
+        av_free(temp_w);
+        errno = EINVAL;
+        return -1;
+    }
+
+    av_freep(ppath_w);
+    *ppath_w = temp_w;
+
+    return 0;
+}
+
+
+// From libavutil/wchar_filename.h
+static inline int path_normalize(wchar_t **ppath_w)
+{
+    int ret;
+
+    if ((ret = get_full_path_name(ppath_w)) < 0)
+        return ret;
+
+    /* What .NET does at this point is to call PathHelper.TryExpandShortFileName()
+     * in case the path contains a '~' character.
+     * We don't need to do this as we don't need to normalize the file name
+     * for presentation, and the extended path prefix works with 8.3 path
+     * components as well
+     */
+    return 0;
+}
+
+
+static inline int path_is_device_path(const wchar_t *path)
+{
+    if (path[0] == L'\\' && path[1] == L'\\' && path[2] == L'.' && path[3] == L'\\')
+        return 1;
+
+    return 0;
+}
+
+
+
+// From libavutil/wchar_filename.h
+static inline int add_extended_prefix(wchar_t **ppath_w)
+{
+    const wchar_t *unc_prefix           = L"\\\\?\\UNC\\";
+    const wchar_t *extended_path_prefix = L"\\\\?\\";
+    const wchar_t *path_w               = *ppath_w;
+    const size_t len                    = wcslen(path_w);
+    wchar_t *temp_w;
+
+    /* We're skipping the check IsPartiallyQualified() because
+     * we expect to have called GetFullPathNameW() already. */
+    if (len < 2 || path_is_extended(*ppath_w) || path_is_device_path(*ppath_w)) {
+        return 0;
+    }
+
+    if (path_w[0] == L'\\' && path_w[1] == L'\\') {
+        /* unc_prefix length is 8 plus 1 for terminating zeros,
+         * we subtract 2 for the leading '\\' of the original path */
+        temp_w = (wchar_t *)av_calloc(len - 2 + 8 + 1, sizeof(wchar_t));
+        if (!temp_w) {
+            errno = ENOMEM;
+            return -1;
+        }
+        wcscpy(temp_w, unc_prefix);
+        wcscat(temp_w, path_w + 2);
+    } else {
+        // The length of extended_path_prefix is 4 plus 1 for terminating zeros
+        temp_w = (wchar_t *)av_calloc(len + 4 + 1, sizeof(wchar_t));
+        if (!temp_w) {
+            errno = ENOMEM;
+            return -1;
+        }
+        wcscpy(temp_w, extended_path_prefix);
+        wcscat(temp_w, path_w);
+    }
+
+    av_freep(ppath_w);
+    *ppath_w = temp_w;
+
+    return 0;
+}
+
+
+
+// From libavutil/wchar_filename.h
+static inline int get_extended_win32_path(const char *path, wchar_t **ppath_w)
+{
+    int ret;
+    size_t len;
+
+    if ((ret = utf8towchar(path, ppath_w)) < 0)
+        return ret;
+
+    if (path_is_extended(*ppath_w)) {
+        /* Paths prefixed with '\\?\' or \??\' are considered normalized by definition.
+         * Windows doesn't normalize those paths and neither should we.
+         */
+        return 0;
+    }
+
+    if ((ret = path_normalize(ppath_w)) < 0) {
+        av_freep(ppath_w);
+        return ret;
+    }
+
+    /* see .NET6: PathInternal.EnsureExtendedPrefixIfNeeded()
+     * https://github.com/dotnet/runtime/blob/9260c249140ef90b4299d0fe1aa3037e25228518/src/libraries/Common/src/System/IO/PathInternal.Windows.cs#L92
+     */
+    len = wcslen(*ppath_w);
+    if (len >= MAX_PATH) {
+        if ((ret = add_extended_prefix(ppath_w)) < 0) {
+            av_freep(ppath_w);
+            return ret;
+        }
+    }
+
+    return 0;
+}
+
+
+
+// From libavutil/fopen_utf8.h
+static inline FILE *fopen_utf8(const char *path_utf8, const char *mode)
+{
+    wchar_t *path_w, *mode_w;
+    FILE *f;
+
+    /* convert UTF-8 to wide chars */
+    if (get_extended_win32_path(path_utf8, &path_w)) /* This sets errno on error. */
+        return NULL;
+    if (!path_w)
+        goto fallback;
+
+    if (utf8towchar(mode, &mode_w))
+        return NULL;
+    if (!mode_w) {
+        /* If failing to interpret the mode string as utf8, it is an invalid
+         * parameter. */
+        av_freep(&path_w);
+        errno = EINVAL;
+        return NULL;
+    }
+
+    f = _wfopen(path_w, mode_w);
+    av_freep(&path_w);
+    av_freep(&mode_w);
+
+    return f;
+fallback:
+    /* path may be in CP_ACP */
+    return fopen(path_utf8, mode);
+}
+
+
 // =============================================================================
 //                              Global Variables & Data Types
 // =============================================================================
