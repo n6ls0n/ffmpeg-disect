@@ -29,6 +29,27 @@
 #include "libavutil/mem.h"
 // #include "libavutil/wchar_filename.h"
 
+av_warn_unused_result
+static inline int utf8towchar(const char *filename_utf8, wchar_t **filename_w)
+{
+    int num_chars;
+    num_chars = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, filename_utf8, -1, NULL, 0);
+    if (num_chars <= 0) {
+        *filename_w = NULL;
+        errno = EINVAL;
+        return -1;
+    }
+    *filename_w = (wchar_t *)av_calloc(num_chars, sizeof(wchar_t));
+    if (!*filename_w) {
+        errno = ENOMEM;
+        return -1;
+    }
+    MultiByteToWideChar(CP_UTF8, 0, filename_utf8, -1, *filename_w, num_chars);
+    return 0;
+}
+
+
+
 static inline wchar_t *get_module_filename(HMODULE module)
 {
     wchar_t *path = NULL, *new_path;
@@ -66,14 +87,8 @@ static inline HMODULE win32_dlopen(const char *name)
 {
     wchar_t *name_w;
     HMODULE module = NULL;
-    int len = MultiByteToWideChar(CP_UTF8, 0, name, -1, NULL, 0);
-    if (!len)
-        return NULL;
-    name_w = av_malloc_array(len, sizeof(*name_w));
-    if (!MultiByteToWideChar(CP_UTF8, 0, name, -1, name_w, len)) {
-        av_free(name_w);
-        return NULL;
-    }
+    if (utf8towchar(name, &name_w))
+        name_w = NULL;
 #if _WIN32_WINNT < 0x0602
     // On Win7 and earlier we check if KB2533623 is available
     if (!GetProcAddress(GetModuleHandleW(L"kernel32.dll"), "SetDefaultDllDirectories")) {
