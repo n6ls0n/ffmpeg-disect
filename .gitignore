@@ -4,3 +4,4 @@ ffmpeg*.tar.xz
 imgui/
 build/
 ffplay.c
+output.txt
