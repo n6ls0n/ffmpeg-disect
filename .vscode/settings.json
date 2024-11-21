@@ -24,6 +24,8 @@
     "utility": "cpp",
     "variant": "cpp",
     "swresample.h": "c",
-    "getenv_utf8.h": "c"
+    "getenv_utf8.h": "c",
+    "libm.h": "c",
+    "fopen_utf8.h": "c"
 }
 }
