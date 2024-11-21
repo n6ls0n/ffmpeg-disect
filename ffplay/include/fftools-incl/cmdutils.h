@@ -30,7 +30,7 @@ extern "C" {
 //                             Config.h Variables
 // =============================================================================
 
-// There are none
+#define FFMPEG_DATADIR "/usr/local/share/ffmpeg"
 
 // =============================================================================
 //                              Global Variables & Data Types
