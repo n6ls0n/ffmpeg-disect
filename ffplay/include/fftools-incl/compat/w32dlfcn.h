@@ -29,6 +29,8 @@
 #include "libavutil/mem.h"
 // #include "libavutil/wchar_filename.h"
 
+
+// From libavutil/wchar_filename.h
 av_warn_unused_result
 static inline int wchartocp(unsigned int code_page, const wchar_t *filename_w,
                             char **filename)
@@ -51,12 +53,16 @@ static inline int wchartocp(unsigned int code_page, const wchar_t *filename_w,
     return 0;
 }
 
+
+// From libavutil/wchar_filename.h
 av_warn_unused_result
 static inline int wchartoutf8(const wchar_t *filename_w, char **filename)
 {
     return wchartocp(CP_UTF8, filename_w, filename);
 }
 
+
+// From libavutil/wchar_filename.h
 av_warn_unused_result
 static inline int utf8towchar(const char *filename_utf8, wchar_t **filename_w)
 {
