@@ -4,9 +4,24 @@ project(ffplay C CXX)  # Add C language
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Add option for GUI mode
+option(BUILD_AS_GUI "Build as GUI application" OFF)
+
 # Set GUI_TYPE for Windows
-if(WIN32)
+if(WIN32 AND BUILD_AS_GUI)
     set(GUI_TYPE WIN32)
+else()
+    set(GUI_TYPE "")
+endif()
+
+# Add definition for GUI mode
+if(BUILD_AS_GUI)
+    add_definitions(-DBUILD_AS_GUI)
+endif()
+
+# Add SDL_MAIN_HANDLED definition for Windows
+if(WIN32)
+    add_definitions(-DSDL_MAIN_HANDLED)
 endif()
 
 # Set MSYS2 MinGW-w64 environment
@@ -112,6 +127,10 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     fftools
 )
 
+if(WIN32)
+    target_link_libraries(${PROJECT_NAME} PRIVATE SDL2::SDL2main)
+endif()
+
 # Add custom target for copying resources (if needed)
 add_custom_target(copy_resources ALL)
 
@@ -136,6 +155,9 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E echo "FFMPEG and MinGW DLLs copied successfully"
 )
 
-if(WIN32)
+if(WIN32 AND BUILD_AS_GUI)
     target_link_options(${PROJECT_NAME} PRIVATE -mwindows)
+    set_target_properties(${PROJECT_NAME} PROPERTIES WIN32_EXECUTABLE TRUE)
+else()
+    set_target_properties(${PROJECT_NAME} PROPERTIES WIN32_EXECUTABLE FALSE)
 endif()
