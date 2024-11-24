@@ -3942,6 +3942,21 @@ extern "C" int SDL_main(int argc, char** argv)
     av_log_set_flags(AV_LOG_SKIP_REPEATED);
     parse_loglevel(argc, argv, options);
 
+    /* register all codecs, demux and protocols */
+    #if CONFIG_AVDEVICE
+        avdevice_register_all();
+    #endif
+        avformat_network_init();
+
+        signal(SIGINT , sigterm_handler); /* Interrupt (ANSI).    */
+        signal(SIGTERM, sigterm_handler); /* Termination (ANSI).  */
+
+        show_banner(argc, argv, options);
+
+        ret = parse_options(NULL, argc, argv, options, opt_input_file);
+        if (ret < 0)
+            exit(ret == AVERROR_EXIT ? 0 : 1);
+
     // Initialize SDL
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER) != 0)
     {
