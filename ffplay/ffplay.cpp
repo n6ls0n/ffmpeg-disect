@@ -3942,27 +3942,20 @@ extern "C" int SDL_main(int argc, char** argv)
     av_log_set_flags(AV_LOG_SKIP_REPEATED);
     parse_loglevel(argc, argv, options);
 
-    /* register all codecs, demux and protocols */
-    #if CONFIG_AVDEVICE
-        avdevice_register_all();
-    #endif
-        avformat_network_init();
+/* register all codecs, demux and protocols */
+#if CONFIG_AVDEVICE
+    avdevice_register_all();
+#endif
+    avformat_network_init();
 
-        signal(SIGINT , sigterm_handler); /* Interrupt (ANSI).    */
-        signal(SIGTERM, sigterm_handler); /* Termination (ANSI).  */
+    signal(SIGINT , sigterm_handler); /* Interrupt (ANSI).    */
+    signal(SIGTERM, sigterm_handler); /* Termination (ANSI).  */
 
-        show_banner(argc, argv, options);
+    show_banner(argc, argv, options);
 
-        ret = parse_options(NULL, argc, argv, options, opt_input_file);
-        if (ret < 0)
-            exit(ret == AVERROR_EXIT ? 0 : 1);
-
-    // Initialize SDL
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER) != 0)
-    {
-        fprintf(stderr, "Error: %s\n", SDL_GetError());
-        return -1;
-    }
+    ret = parse_options(NULL, argc, argv, options, opt_input_file);
+    if (ret < 0)
+        exit(ret == AVERROR_EXIT ? 0 : 1);
 
     #ifdef BUILD_AS_GUI
         // Create window
@@ -4040,6 +4033,14 @@ extern "C" int SDL_main(int argc, char** argv)
         SDL_DestroyWindow(window);
     #else
 
+        if (!input_filename) {
+        show_usage();
+        av_log(NULL, AV_LOG_FATAL, "An input file must be specified\n");
+        av_log(NULL, AV_LOG_FATAL,
+                "Use -h to get full help or, even better, run 'man %s'\n", program_name);
+        exit(1);
+        }
+
         // Create a window
         SDL_Window* window = SDL_CreateWindow("FFplay Console Mode", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, 0);
         if (window == NULL)
@@ -4100,6 +4101,9 @@ extern "C" int SDL_main(int argc, char** argv)
 //     ret = parse_options(NULL, argc, argv, options, opt_input_file);
 //     if (ret < 0)
 //         exit(ret == AVERROR_EXIT ? 0 : 1);
+
+
+
 
 //     if (!input_filename) {
 //         show_usage();
