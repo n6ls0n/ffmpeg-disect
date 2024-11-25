@@ -13,4 +13,4 @@ unzip SDL2-devel-2.30.9-mingw.zip
 
 cd SDL2-2.30.9
 
-mv x86_64-w64-mingw32 ../ffmpeg
+mv x86_64-w64-mingw32 ../ffmpeg/SDL2-30
