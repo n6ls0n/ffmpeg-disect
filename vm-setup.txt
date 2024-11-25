@@ -1,0 +1,11 @@
+
+
+sudo apt install yasm g++ gcc build-essential git nasm libsdl2-dev-y
+
+sudo apt-get install mingw-w64 mingw-w64-x86-64-dev mingw-w64-tools -y
+
+git clone https://git.ffmpeg.org/ffmpeg.git
+
+cd ffmpeg && mkdir build && cd build && mkdir bin && mkdir lib && mkdir include && mkdir share && mkdir share/ffmpeg
+
+
