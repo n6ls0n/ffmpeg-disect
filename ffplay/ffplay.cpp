@@ -4033,13 +4033,26 @@ extern "C" int SDL_main(int argc, char** argv)
         SDL_DestroyWindow(window);
     #else
 
-        if (!input_filename) {
-        show_usage();
-        av_log(NULL, AV_LOG_FATAL, "An input file must be specified\n");
-        av_log(NULL, AV_LOG_FATAL,
-                "Use -h to get full help or, even better, run 'man %s'\n", program_name);
-        exit(1);
-        }
+        // if (!input_filename) {
+        // show_usage();
+        // av_log(NULL, AV_LOG_FATAL, "An input file must be specified\n");
+        // av_log(NULL, AV_LOG_FATAL,
+        //         "Use -h to get full help or, even better, run 'man %s'\n", program_name);
+        // exit(1);
+        // }
+
+        // if (display_disable) {
+        // video_disable = 1;
+        // }
+        // flags = SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER;
+        // if (audio_disable)
+        //     flags &= ~SDL_INIT_AUDIO;
+        // else {
+        //     /* Try to work around an occasional ALSA buffer underflow issue when the
+        //     * period size is NPOT due to ALSA resampling by forcing the buffer size. */
+        //     if (!SDL_getenv("SDL_AUDIO_ALSA_SET_BUFFER_SIZE"))
+        //         SDL_setenv("SDL_AUDIO_ALSA_SET_BUFFER_SIZE","1", 1);
+        // }
 
         // Create a window
         SDL_Window* window = SDL_CreateWindow("FFplay Console Mode", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, 0);
@@ -4074,148 +4087,3 @@ extern "C" int SDL_main(int argc, char** argv)
 
     return 0;
 }
-
-
-// /* Called from the main */
-// int main(int argc, char **argv)
-// {
-//     int flags, ret;
-//     VideoState *is;
-
-//     init_dynload();
-
-//     av_log_set_flags(AV_LOG_SKIP_REPEATED);
-//     parse_loglevel(argc, argv, options);
-
-//     /* register all codecs, demux and protocols */
-// #if CONFIG_AVDEVICE
-//     avdevice_register_all();
-// #endif
-//     avformat_network_init();
-
-//     signal(SIGINT , sigterm_handler); /* Interrupt (ANSI).    */
-//     signal(SIGTERM, sigterm_handler); /* Termination (ANSI).  */
-
-//     show_banner(argc, argv, options);
-
-//     ret = parse_options(NULL, argc, argv, options, opt_input_file);
-//     if (ret < 0)
-//         exit(ret == AVERROR_EXIT ? 0 : 1);
-
-
-
-
-//     if (!input_filename) {
-//         show_usage();
-//         av_log(NULL, AV_LOG_FATAL, "An input file must be specified\n");
-//         av_log(NULL, AV_LOG_FATAL,
-//                "Use -h to get full help or, even better, run 'man %s'\n", program_name);
-//         exit(1);
-//     }
-
-//     if (display_disable) {
-//         video_disable = 1;
-//     }
-//     flags = SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER;
-//     if (audio_disable)
-//         flags &= ~SDL_INIT_AUDIO;
-//     else {
-//         /* Try to work around an occasional ALSA buffer underflow issue when the
-//          * period size is NPOT due to ALSA resampling by forcing the buffer size. */
-//         if (!SDL_getenv("SDL_AUDIO_ALSA_SET_BUFFER_SIZE"))
-//             SDL_setenv("SDL_AUDIO_ALSA_SET_BUFFER_SIZE","1", 1);
-//     }
-//     if (display_disable)
-//         flags &= ~SDL_INIT_VIDEO;
-//     if (SDL_Init (flags)) {
-//         av_log(NULL, AV_LOG_FATAL, "Could not initialize SDL - %s\n", SDL_GetError());
-//         av_log(NULL, AV_LOG_FATAL, "(Did you set the DISPLAY variable?)\n");
-//         exit(1);
-//     }
-
-//     SDL_EventState(SDL_SYSWMEVENT, SDL_IGNORE);
-//     SDL_EventState(SDL_USEREVENT, SDL_IGNORE);
-
-//     if (!display_disable) {
-//         int flags = SDL_WINDOW_HIDDEN;
-//         if (alwaysontop)
-// #if SDL_VERSION_ATLEAST(2,0,5)
-//             flags |= SDL_WINDOW_ALWAYS_ON_TOP;
-// #else
-//             av_log(NULL, AV_LOG_WARNING, "Your SDL version doesn't support SDL_WINDOW_ALWAYS_ON_TOP. Feature will be inactive.\n");
-// #endif
-//         if (borderless)
-//             flags |= SDL_WINDOW_BORDERLESS;
-//         else
-//             flags |= SDL_WINDOW_RESIZABLE;
-
-// #ifdef SDL_HINT_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR
-//         SDL_SetHint(SDL_HINT_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR, "0");
-// #endif
-//         if (hwaccel && !enable_vulkan) {
-//             av_log(NULL, AV_LOG_INFO, "Enable vulkan renderer to support hwaccel %s\n", hwaccel);
-//             enable_vulkan = 1;
-//         }
-//         if (enable_vulkan) {
-//             vk_renderer = vk_get_renderer();
-//             if (vk_renderer) {
-// #if SDL_VERSION_ATLEAST(2, 0, 6)
-//                 flags |= SDL_WINDOW_VULKAN;
-// #endif
-//             } else {
-//                 av_log(NULL, AV_LOG_WARNING, "Doesn't support vulkan renderer, fallback to SDL renderer\n");
-//                 enable_vulkan = 0;
-//             }
-//         }
-//         window = SDL_CreateWindow(program_name, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, default_width, default_height, flags);
-//         SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
-//         if (!window) {
-//             av_log(NULL, AV_LOG_FATAL, "Failed to create window: %s", SDL_GetError());
-//             do_exit(NULL);
-//         }
-
-//         if (vk_renderer) {
-//             AVDictionary *dict = NULL;
-
-//             if (vulkan_params) {
-//                 int ret = av_dict_parse_string(&dict, vulkan_params, "=", ":", 0);
-//                 if (ret < 0) {
-//                     av_log(NULL, AV_LOG_FATAL, "Failed to parse, %s\n", vulkan_params);
-//                     do_exit(NULL);
-//                 }
-//             }
-//             ret = vk_renderer_create(vk_renderer, window, dict);
-//             av_dict_free(&dict);
-//             if (ret < 0) {
-//                 av_log(NULL, AV_LOG_FATAL, "Failed to create vulkan renderer, %s\n", av_err2str(ret));
-//                 do_exit(NULL);
-//             }
-//         } else {
-//             renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-//             if (!renderer) {
-//                 av_log(NULL, AV_LOG_WARNING, "Failed to initialize a hardware accelerated renderer: %s\n", SDL_GetError());
-//                 renderer = SDL_CreateRenderer(window, -1, 0);
-//             }
-//             if (renderer) {
-//                 if (!SDL_GetRendererInfo(renderer, &renderer_info))
-//                     av_log(NULL, AV_LOG_VERBOSE, "Initialized %s renderer.\n", renderer_info.name);
-//             }
-//             if (!renderer || !renderer_info.num_texture_formats) {
-//                 av_log(NULL, AV_LOG_FATAL, "Failed to create window or renderer: %s", SDL_GetError());
-//                 do_exit(NULL);
-//             }
-//         }
-//     }
-
-//     is = stream_open(input_filename, file_iformat);
-//     if (!is) {
-//         av_log(NULL, AV_LOG_FATAL, "Failed to initialize VideoState!\n");
-//         do_exit(NULL);
-//     }
-
-//     event_loop(is);
-
-//     /* never returns */
-
-//     return 0;
-// }
