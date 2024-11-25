@@ -17,7 +17,9 @@ mingw-w64 cross-compilation configuration
   --bindir=$(pwd)/build/bin \
   --datadir=$(pwd)/build/share/ffmpeg \
   --libdir=$(pwd)/build/lib \
-  --incdir=$(pwd)/build/include
+  --incdir=$(pwd)/build/include \
+  --extra-cflags="-I$(pwd)/SDL2-30/include/SDL2" \
+  --extra-ldflags="-L$(pwd)/SDL2-30/lib"
 
 Basic make command
 make
