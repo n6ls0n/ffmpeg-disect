@@ -1,0 +1,36 @@
+Basic configuration command
+./configure
+
+mingw-w64 cross-compilation configuration
+./configure \
+  --arch=x86_64 \
+  --target-os=mingw32 \
+  --cross-prefix=x86_64-w64-mingw32- \
+  --pkg-config=pkg-config \
+  --enable-cross-compile \
+  --enable-shared \
+  --disable-static \
+  --enable-w32threads \
+  --enable-gpl \
+  --enable-nonfree \
+  --prefix=$(pwd)/build \
+  --bindir=$(pwd)/build/bin \
+  --datadir=$(pwd)/build/share/ffmpeg \
+  --libdir=$(pwd)/build/lib \
+  --incdir=$(pwd)/build/include \
+
+Basic make command
+make
+
+Install
+make install
+
+Remove configurations and any built binaries
+make distclean
+
+Clear installation files
+cd build/ && find . -type f -delete
+
+
+
+
