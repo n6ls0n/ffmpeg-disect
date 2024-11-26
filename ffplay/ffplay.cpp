@@ -4033,18 +4033,20 @@ extern "C" int SDL_main(int argc, char** argv)
         SDL_DestroyWindow(window);
     #else
 
-        if (!input_filename) {
-        show_usage();
-        av_log(NULL, AV_LOG_FATAL, "An input file must be specified\n");
-        av_log(NULL, AV_LOG_FATAL,
-                "Use -h to get full help or, even better, run 'man %s'\n", program_name);
-        exit(1);
-        }
+        // if (!input_filename) {
+        // show_usage();
+        // av_log(NULL, AV_LOG_FATAL, "An input file must be specified\n");
+        // av_log(NULL, AV_LOG_FATAL,
+        //         "Use -h to get full help or, even better, run 'man %s'\n", program_name);
+        // exit(1);
+        // }
 
         if (display_disable) {
         video_disable = 1;
         }
+
         flags = SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER;
+
         if (audio_disable)
             flags &= ~SDL_INIT_AUDIO;
         else {
@@ -4053,6 +4055,27 @@ extern "C" int SDL_main(int argc, char** argv)
             if (!SDL_getenv("SDL_AUDIO_ALSA_SET_BUFFER_SIZE"))
                 SDL_setenv("SDL_AUDIO_ALSA_SET_BUFFER_SIZE","1", 1);
         }
+
+        if (display_disable)
+            flags &= ~SDL_INIT_VIDEO;
+        if (SDL_Init (flags)) {
+            av_log(NULL, AV_LOG_FATAL, "Could not initialize SDL - %s\n", SDL_GetError());
+            av_log(NULL, AV_LOG_FATAL, "(Did you set the DISPLAY variable?)\n");
+            exit(1);
+        }
+
+        if (!display_disable) {
+        int flags = SDL_WINDOW_HIDDEN;
+        if (alwaysontop)
+#if SDL_VERSION_ATLEAST(2,0,5)
+            flags |= SDL_WINDOW_ALWAYS_ON_TOP;
+#else
+            av_log(NULL, AV_LOG_WARNING, "Your SDL version doesn't support SDL_WINDOW_ALWAYS_ON_TOP. Feature will be inactive.\n");
+#endif
+        if (borderless)
+            flags |= SDL_WINDOW_BORDERLESS;
+        else
+            flags |= SDL_WINDOW_RESIZABLE;
 
         // Create a window
         SDL_Window* window = SDL_CreateWindow("FFplay Console Mode", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, 0);
