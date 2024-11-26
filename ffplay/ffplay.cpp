@@ -2888,24 +2888,6 @@ static int64_t frame_queue_last_pos(FrameQueue *f)
 }
 
 
-//              ##########################################
-//                         Thread Functions
-//              ##########################################
-
-
-
-
-
-//              ##########################################
-//                         Audio Functions
-//              ##########################################
-
-
-
-
-//              ##########################################
-//                         Video Functions
-//              ##########################################
 
 static int video_open(VideoState *is)
 {
@@ -3557,26 +3539,6 @@ static void seek_chapter(VideoState *is, int incr)
 }
 
 
-
-
-//              ##########################################
-//                         Filter Functions
-//              ##########################################
-
-
-//              ##########################################
-//                         Decoder Functions
-//              ##########################################
-
-
-
-
-//              ##########################################
-//                         SDL Functions
-//              ##########################################
-
-
-
 static void do_exit(VideoState *is)
 {
     if (is) {
@@ -4042,7 +4004,7 @@ extern "C" int SDL_main(int argc, char** argv)
         // }
 
         if (display_disable) {
-        video_disable = 1;
+            video_disable = 1;
         }
 
         flags = SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER;
@@ -4063,28 +4025,47 @@ extern "C" int SDL_main(int argc, char** argv)
             av_log(NULL, AV_LOG_FATAL, "(Did you set the DISPLAY variable?)\n");
             exit(1);
         }
+        SDL_EventState(SDL_SYSWMEVENT, SDL_IGNORE);
+        SDL_EventState(SDL_USEREVENT, SDL_IGNORE);
 
-        if (!display_disable) {
-        int flags = SDL_WINDOW_HIDDEN;
-        if (alwaysontop)
-#if SDL_VERSION_ATLEAST(2,0,5)
-            flags |= SDL_WINDOW_ALWAYS_ON_TOP;
-#else
-            av_log(NULL, AV_LOG_WARNING, "Your SDL version doesn't support SDL_WINDOW_ALWAYS_ON_TOP. Feature will be inactive.\n");
-#endif
+        // int flags = SDL_WINDOW_HIDDEN;
+//         if (alwaysontop)
+// #if SDL_VERSION_ATLEAST(2,0,5)
+//             flags |= SDL_WINDOW_ALWAYS_ON_TOP;
+// #else
+//             av_log(NULL, AV_LOG_WARNING, "Your SDL version doesn't support SDL_WINDOW_ALWAYS_ON_TOP. Feature will be inactive.\n");
+// #endif
         if (borderless)
-            flags |= SDL_WINDOW_BORDERLESS;
-        else
             flags |= SDL_WINDOW_RESIZABLE;
 
-        // Create a window
-        SDL_Window* window = SDL_CreateWindow("FFplay Console Mode", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, 0);
-        if (window == NULL)
-        {
-            fprintf(stderr, "Error creating window: %s\n", SDL_GetError());
+#ifdef SDL_HINT_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR
+        SDL_SetHint(SDL_HINT_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR, "0");
+#endif
+        window = SDL_CreateWindow(program_name, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+                          640, 480, 0);
+
+        SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
+        if (!window) {
+            av_log(NULL, AV_LOG_FATAL, "Failed to create window: %s\n", SDL_GetError());
             SDL_Quit();
             return -1;
         }
+
+        renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+
+        if (!renderer) {
+            av_log(NULL, AV_LOG_WARNING, "Failed to initialize a hardware accelerated renderer: %s\n", SDL_GetError());
+            renderer = SDL_CreateRenderer(window, -1, 0);
+        }
+        if (renderer) {
+            if (!SDL_GetRendererInfo(renderer, &renderer_info))
+                av_log(NULL, AV_LOG_VERBOSE, "Initialized %s renderer.\n", renderer_info.name);
+        }
+        if (!renderer || !renderer_info.num_texture_formats) {
+            av_log(NULL, AV_LOG_FATAL, "Failed to create window or renderer: %s", SDL_GetError());
+            do_exit(NULL);
+        }
+
 
         // Show the window
         SDL_ShowWindow(window);
