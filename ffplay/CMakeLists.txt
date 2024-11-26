@@ -1,41 +1,34 @@
 cmake_minimum_required(VERSION 3.10)
-project(ffplay C CXX)  # Add C language
+project(ffplay C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Add option for GUI mode
-option(BUILD_AS_GUI "Build as GUI application" OFF)
+option(BUILD_AS_GUI "Build as GUI application" ON)
 
-# Set GUI_TYPE for Windows
 if(WIN32 AND BUILD_AS_GUI)
     set(GUI_TYPE WIN32)
 else()
     set(GUI_TYPE "")
 endif()
 
-# Add definition for GUI mode
 if(BUILD_AS_GUI)
     add_definitions(-DBUILD_AS_GUI)
 endif()
 
-# Add SDL_MAIN_HANDLED definition for Windows
-if(WIN32)
-    add_definitions(-DSDL_MAIN_HANDLED)
-endif()
+add_definitions(-DSDL_MAIN_HANDLED)
 
-# Set MSYS2 MinGW-w64 environment
 set(CMAKE_C_COMPILER "gcc")
 set(CMAKE_CXX_COMPILER "g++")
 
-# Set paths to look for libraries and includes at the same folder level
+# Set paths to look for libraries and includes
 set(LIB_DIR "${CMAKE_CURRENT_SOURCE_DIR}/libs")
 set(INCLUDES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include")
 
 # Set FFMPEG directories
-set(FFMPEG_INCLUDE_DIR "C:/msys64/mingw64/include")
-set(FFMPEG_LIB_DIR "C:/msys64/mingw64/lib")
-set(FFMPEG_BIN_DIR "C:/msys64/mingw64/bin")
+set(FFMPEG_INCLUDE_DIR "${INCLUDES_DIR}/ffmpeg-include")
+set(FFMPEG_LIB_DIR "${LIB_DIR}/ffmpeg-libs/lib")
+set(FFMPEG_BIN_DIR "${LIB_DIR}/ffmpeg-libs/bin")
 
 # Set FFTOOLS directories
 set(FFTOOLS_INCLUDE_DIR "${INCLUDES_DIR}/fftools-incl")
@@ -49,20 +42,20 @@ endif()
 # Set MinGW-w64 bin directory
 set(MINGW_BIN_DIR "C:/msys64/mingw64/bin")
 
-# Find required packages
-find_package(SDL2 REQUIRED)
-
 # Set FFMPEG libraries
 set(FFMPEG_LIBRARIES
-    avcodec
-    avformat
-    avutil
-    avdevice
-    avfilter
-    postproc
-    swresample
-    swscale
+    ${FFMPEG_LIB_DIR}/libavcodec.dll.a
+    ${FFMPEG_LIB_DIR}/libavformat.dll.a
+    ${FFMPEG_LIB_DIR}/libavutil.dll.a
+    ${FFMPEG_LIB_DIR}/libavdevice.dll.a
+    ${FFMPEG_LIB_DIR}/libavfilter.dll.a
+    ${FFMPEG_LIB_DIR}/libpostproc.dll.a
+    ${FFMPEG_LIB_DIR}/libswresample.dll.a
+    ${FFMPEG_LIB_DIR}/libswscale.dll.a
 )
+
+# Find SDL2 package
+find_package(SDL2 REQUIRED)
 
 # Add platform-specific libraries
 if(NOT WIN32)
@@ -117,9 +110,6 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${FFTOOLS_LIB_DIR}
 )
 
-# Add FFmpeg library directory to link path
-link_directories(${FFMPEG_LIB_DIR})
-
 # Link libraries
 target_link_libraries(${PROJECT_NAME} PRIVATE
     ${SDL2_LIBRARIES}
@@ -127,37 +117,33 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     fftools
 )
 
-if(WIN32)
-    target_link_libraries(${PROJECT_NAME} PRIVATE SDL2::SDL2main)
-endif()
-
 # Add custom target for copying resources (if needed)
 add_custom_target(copy_resources ALL)
 
 # Make sure the resources are copied before building the executable
 add_dependencies(${PROJECT_NAME} copy_resources)
 
+file(GLOB FFMPEG_DLLS "${FFMPEG_BIN_DIR}/*.dll")
+file(GLOB MINGW_DLLS "${MINGW_BIN_DIR}/libgcc_s_seh-1.dll" "${MINGW_BIN_DIR}/libstdc++-6.dll" "${MINGW_BIN_DIR}/libwinpthread-1.dll")
+
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E echo "Copying FFMPEG and MinGW DLLs..."
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        ${FFMPEG_BIN_DIR}/avcodec-61.dll
-        ${FFMPEG_BIN_DIR}/avformat-61.dll
-        ${FFMPEG_BIN_DIR}/avutil-59.dll
-        ${FFMPEG_BIN_DIR}/avdevice-61.dll
-        ${FFMPEG_BIN_DIR}/avfilter-10.dll
-        ${FFMPEG_BIN_DIR}/swresample-5.dll
-        ${FFMPEG_BIN_DIR}/swscale-8.dll
-        ${FFMPEG_BIN_DIR}/postproc-58.dll
-        ${MINGW_BIN_DIR}/libgcc_s_seh-1.dll
-        ${MINGW_BIN_DIR}/libstdc++-6.dll
-        ${MINGW_BIN_DIR}/libwinpthread-1.dll
-        $<TARGET_FILE_DIR:${PROJECT_NAME}>
+    COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different ${FFMPEG_DLLS} "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different ${MINGW_DLLS} "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
     COMMAND ${CMAKE_COMMAND} -E echo "FFMPEG and MinGW DLLs copied successfully"
 )
 
-if(WIN32 AND BUILD_AS_GUI)
-    target_link_options(${PROJECT_NAME} PRIVATE -mwindows)
-    set_target_properties(${PROJECT_NAME} PROPERTIES WIN32_EXECUTABLE TRUE)
-else()
-    set_target_properties(${PROJECT_NAME} PROPERTIES WIN32_EXECUTABLE FALSE)
+if(WIN32)
+    if(BUILD_AS_GUI)
+        set_target_properties(${PROJECT_NAME} PROPERTIES
+            WIN32_EXECUTABLE TRUE
+            LINK_FLAGS "-mwindows"
+        )
+    else()
+        set_target_properties(${PROJECT_NAME} PROPERTIES
+            WIN32_EXECUTABLE FALSE
+            LINK_FLAGS "-mconsole"
+        )
+    endif()
 endif()

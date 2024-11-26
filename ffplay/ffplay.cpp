@@ -1,6 +1,15 @@
 // =============================================================================
 //                              Include Statements
 // =============================================================================
+#include <SDL2/SDL.h>
+
+#if defined(_WIN32) && defined(BUILD_AS_GUI)
+#include <windows.h>
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
+{
+    return SDL_main(__argc, __argv);
+}
+#endif
 
 #include <math.h>
 #include <limits.h>
@@ -11,6 +20,10 @@
 #include "imgui.h"
 #include "imgui_impl_sdl2.h"
 #include "imgui_impl_sdlrenderer2.h"
+#endif
+
+#ifdef _WIN32
+#include <SDL2/SDL_main.h>
 #endif
 
 #include <SDL2/SDL.h>
@@ -3919,19 +3932,6 @@ static void event_loop(VideoState *cur_stream)
 //                                 Main Loop
 // =============================================================================
 
-#ifdef _WIN32
-#include <SDL2/SDL_main.h>
-#endif
-
-#include <SDL2/SDL.h>
-#include <stdio.h>
-
-#ifdef BUILD_AS_GUI
-#include "imgui.h"
-#include "imgui_impl_sdl2.h"
-#include "imgui_impl_sdlrenderer2.h"
-#endif
-
 extern "C" int SDL_main(int argc, char** argv)
 {
     int flags, ret;
@@ -4033,26 +4033,26 @@ extern "C" int SDL_main(int argc, char** argv)
         SDL_DestroyWindow(window);
     #else
 
-        // if (!input_filename) {
-        // show_usage();
-        // av_log(NULL, AV_LOG_FATAL, "An input file must be specified\n");
-        // av_log(NULL, AV_LOG_FATAL,
-        //         "Use -h to get full help or, even better, run 'man %s'\n", program_name);
-        // exit(1);
-        // }
+        if (!input_filename) {
+        show_usage();
+        av_log(NULL, AV_LOG_FATAL, "An input file must be specified\n");
+        av_log(NULL, AV_LOG_FATAL,
+                "Use -h to get full help or, even better, run 'man %s'\n", program_name);
+        exit(1);
+        }
 
-        // if (display_disable) {
-        // video_disable = 1;
-        // }
-        // flags = SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER;
-        // if (audio_disable)
-        //     flags &= ~SDL_INIT_AUDIO;
-        // else {
-        //     /* Try to work around an occasional ALSA buffer underflow issue when the
-        //     * period size is NPOT due to ALSA resampling by forcing the buffer size. */
-        //     if (!SDL_getenv("SDL_AUDIO_ALSA_SET_BUFFER_SIZE"))
-        //         SDL_setenv("SDL_AUDIO_ALSA_SET_BUFFER_SIZE","1", 1);
-        // }
+        if (display_disable) {
+        video_disable = 1;
+        }
+        flags = SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER;
+        if (audio_disable)
+            flags &= ~SDL_INIT_AUDIO;
+        else {
+            /* Try to work around an occasional ALSA buffer underflow issue when the
+            * period size is NPOT due to ALSA resampling by forcing the buffer size. */
+            if (!SDL_getenv("SDL_AUDIO_ALSA_SET_BUFFER_SIZE"))
+                SDL_setenv("SDL_AUDIO_ALSA_SET_BUFFER_SIZE","1", 1);
+        }
 
         // Create a window
         SDL_Window* window = SDL_CreateWindow("FFplay Console Mode", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, 0);
